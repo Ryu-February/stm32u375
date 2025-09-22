@@ -12,6 +12,8 @@
 
 
 
+
+
 void ap_tim4_callback(void)
 {
 
@@ -19,7 +21,7 @@ void ap_tim4_callback(void)
 
 void ap_tim6_callback(void)
 {
-	static uint8_t tick = 0;
+	static uint32_t tick = 0;
 
 	if(++tick >= 1000)
 	{
