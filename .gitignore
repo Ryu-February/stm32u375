@@ -1,0 +1,15 @@
+# 빌드 결과물 무시
+/Debug/
+/Release/
+*.o
+*.elf
+*.bin
+*.hex
+
+# IDE 설정 중 개인화된 것들 무시
+*.launch
+*.log
+*.swp
+
+# CubeMX 자동 생성 로그
+*.ioc.log
