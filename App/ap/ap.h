@@ -12,6 +12,9 @@
 
 #include "utils.h"
 
+#include "led.h"
+#include "rgb.h"
+
 
 
 void ap_init(void);

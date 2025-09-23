@@ -7,6 +7,7 @@
 
 
 #include "ap_isr.h"
+#include "rgb.h"
 
 
 
@@ -16,17 +17,11 @@
 
 void ap_tim4_callback(void)
 {
-
+//	rgb_set_color(COLOR_ORANGE);
+	rgb_tick();
 }
 
 void ap_tim6_callback(void)
 {
-	static uint32_t tick = 0;
-
-	if(++tick >= 1000)
-	{
-		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_5);
-		tick = 0;
-	}
 
 }

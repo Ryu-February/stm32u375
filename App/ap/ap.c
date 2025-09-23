@@ -19,11 +19,8 @@ void ap_init(void)
 	HAL_TIM_Base_Start_IT(&htim4);
 	HAL_TIM_Base_Start_IT(&htim6);
 
-	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_SET);
-
-	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_SET);
+	led_init();
+	rgb_init();
 
 }
 
@@ -31,8 +28,7 @@ void ap_main(void)
 {
 	while(1)
 	{
-//		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_0);
-//		delay_ms(1000);
+		rgb_set_color(RGB_ZONE_V_SHAPE, COLOR_ORANGE);
 	}
 }
 
