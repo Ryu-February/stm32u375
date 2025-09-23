@@ -12,11 +12,21 @@
 #include "def.h"
 
 
-void led_init(void);
 
-void led_on(uint8_t ch);
-void led_off(uint8_t ch);
-void led_toggle(uint8_t ch);
+typedef enum
+{
+	LED_POWER_STAT = 0,
+	LED_W_CONTROL,
+	LED_CH_COUNT
+}led_ch_t;
+
+
+void led_init(void);
+void led_on(led_ch_t ch);
+void led_off(led_ch_t ch);
+void led_toggle(led_ch_t ch);
+void led_write(led_ch_t ch, bool on);
+bool led_is_on(led_ch_t ch);
 
 
 

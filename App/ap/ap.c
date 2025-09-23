@@ -28,7 +28,9 @@ void ap_main(void)
 {
 	while(1)
 	{
-		rgb_set_color(RGB_ZONE_V_SHAPE, COLOR_ORANGE);
+//		rgb_set_color(RGB_ZONE_V_SHAPE, COLOR_YELLOW);
+		led_toggle(LED_POWER_STAT);
+		delay_ms(1000);
 	}
 }
 
