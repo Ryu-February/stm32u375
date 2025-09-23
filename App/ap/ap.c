@@ -10,7 +10,7 @@
 #include "ap.h"
 
 
-
+extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim4;
 extern TIM_HandleTypeDef htim6;
 
@@ -26,6 +26,7 @@ void ap_init(void)
 
 	step_init_all();
 
+	HAL_TIM_Base_Start_IT(&htim2);
 	HAL_TIM_Base_Start_IT(&htim4);
 	HAL_TIM_Base_Start_IT(&htim6);
 }
@@ -43,6 +44,8 @@ void ap_main(void)
 			app_rgb_actions_notify_press(pressed);
 			app_rgb_actions_poll();
 		}
+
+//		step_drive(OP_REVERSE);
 	}
 }
 

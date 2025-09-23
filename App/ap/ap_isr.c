@@ -9,18 +9,24 @@
 #include "ap_isr.h"
 #include "rgb.h"
 #include "btn.h"
-#include "rgb_actions.h"
+#include "stepper.h"
 
 
 
 
 
+void ap_tim2_callback(void)
+{
+
+}
 
 
 void ap_tim4_callback(void)//10us timer
 {
 //	rgb_set_color(COLOR_ORANGE);
 	rgb_tick();
+
+	step_tick_isr();
 }
 
 void ap_tim6_callback(void)//1ms timer

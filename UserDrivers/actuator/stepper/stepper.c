@@ -47,7 +47,7 @@
 // TIM_PWM_CNT: ARR must be 255; we only read CNT (0..255) for software PWM compare
 // TIM_TICK : free‑running tick for step period (e.g., 1us per tick)
 extern TIM_HandleTypeDef htim2; // use as PWM CNT (ARR=255)
-extern TIM_HandleTypeDef htim16; // use as tick source (1us CNT)
+//extern TIM_HandleTypeDef htim16; // use as tick source (1us CNT)
 
 
 
