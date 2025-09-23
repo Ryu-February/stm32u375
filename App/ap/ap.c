@@ -10,20 +10,27 @@
 #include "ap.h"
 
 
+
 extern TIM_HandleTypeDef htim4;
 extern TIM_HandleTypeDef htim6;
 
 
+
+
 void ap_init(void)
 {
-//	uart_init();
+	uart_init();
 
 	led_init();
 	rgb_init();
 
+	step_init_all();
+
 	HAL_TIM_Base_Start_IT(&htim4);
 	HAL_TIM_Base_Start_IT(&htim6);
 }
+
+
 
 void ap_main(void)
 {
@@ -34,9 +41,8 @@ void ap_main(void)
 		{
 			btn_print_one(pressed);                // ← 출력 (비파괴 아님: 이미 pop 했으니 그냥 찍기만)
 			app_rgb_actions_notify_press(pressed);
+			app_rgb_actions_poll();
 		}
-
-		app_rgb_actions_poll();
 	}
 }
 

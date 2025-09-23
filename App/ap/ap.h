@@ -19,6 +19,8 @@
 #include "btn.h"
 #include "rgb_actions.h"
 
+#include "stepper.h"
+
 
 
 
