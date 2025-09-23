@@ -109,7 +109,7 @@ bool btn_pop_any_press(btn_id_t *out_id)
         {
             s_btn[i].press_flag = 0u;
             if (out_id) *out_id = (btn_id_t)i;
-            return true;
+            	return true;
         }
     }
     return false;
@@ -172,4 +172,12 @@ void btn_print_events(void)
     {
         uart_printf("\r\n");
     }
+}
+
+void btn_print_one(btn_id_t id)
+{
+	const char *name = btn_name(id);
+	if (name == NULL) name = "UNKNOWN";  // 이중 안전장치
+
+	uart_printf("[BTN] press: %s\r\n", name);
 }

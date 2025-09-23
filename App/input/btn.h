@@ -38,5 +38,7 @@ bool btn_pop_any_press(btn_id_t *out_id);
 
 void btn_print_states(void);
 void btn_print_events(void);
+void btn_print_one(btn_id_t id);
+
 
 #endif /* INPUT_BTN_H_ */

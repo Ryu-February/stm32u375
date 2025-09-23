@@ -29,8 +29,14 @@ void ap_main(void)
 {
 	while(1)
 	{
-//		rgb_set_color(RGB_ZONE_V_SHAPE, COLOR_YELLOW);
-		btn_print_events();
+		btn_id_t pressed;
+		if(btn_pop_any_press(&pressed))
+		{
+			btn_print_one(pressed);                // ← 출력 (비파괴 아님: 이미 pop 했으니 그냥 찍기만)
+			app_rgb_actions_notify_press(pressed);
+		}
+
+		app_rgb_actions_poll();
 	}
 }
 

@@ -26,10 +26,4 @@ void ap_tim4_callback(void)//10us timer
 void ap_tim6_callback(void)//1ms timer
 {
 	btn_update_1ms();
-
-	btn_id_t pressed;
-	if(btn_pop_any_press(&pressed))
-	{
-		app_rgb_actions_notify_press(pressed);
-	}
 }

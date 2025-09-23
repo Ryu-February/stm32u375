@@ -43,8 +43,6 @@ void app_rgb_actions_notify_press(btn_id_t btn_id)
     // 초경량 경로: ISR에서 즉시 적용(로그는 안 찍음)
     rgb_set_color(RGB_ZONE_V_SHAPE, color_by_button(btn_id));
 #endif
-    // 초경량 경로: ISR에서 즉시 적용(로그는 안 찍음)
-	rgb_set_color(RGB_ZONE_V_SHAPE, color_by_button(btn_id));
     // 이벤트를 메인 루프로 전달 (마지막 이벤트 1건만 유지)
     s_evt_btn     = btn_id;
     s_evt_pending = 1;
