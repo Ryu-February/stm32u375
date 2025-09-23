@@ -38,14 +38,31 @@ void ap_main(void)
 	while(1)
 	{
 		btn_id_t pressed;
+		StepOperation op;
+
 		if(btn_pop_any_press(&pressed))
 		{
 			btn_print_one(pressed);                // ← 출력 (비파괴 아님: 이미 pop 했으니 그냥 찍기만)
 			app_rgb_actions_notify_press(pressed);
 			app_rgb_actions_poll();
-		}
 
-//		step_drive(OP_REVERSE);
+			switch (pressed)
+			{
+				case BTN_FORWARD:
+					op = OP_FORWARD;
+					break;
+				case BTN_BACKWARD:
+					op = OP_REVERSE;
+					break;
+				case BTN_LEFT:
+					op = OP_TURN_LEFT;
+					break;
+				case BTN_RIGHT:
+					op = OP_TURN_RIGHT;
+					break;
+			}
+		}
+		step_drive(op);
 	}
 }
 
