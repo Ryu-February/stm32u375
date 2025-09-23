@@ -15,13 +15,13 @@
 
 
 
-void ap_tim4_callback(void)
+void ap_tim4_callback(void)//10us timer
 {
 //	rgb_set_color(COLOR_ORANGE);
 	rgb_tick();
 }
 
-void ap_tim6_callback(void)
+void ap_tim6_callback(void)//1ms timer
 {
-
+	btn_update_1ms();
 }
