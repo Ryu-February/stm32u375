@@ -14,7 +14,7 @@
 
 #include "led.h"
 #include "rgb.h"
-
+#include "uart.h"
 
 
 void ap_init(void);

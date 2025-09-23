@@ -16,12 +16,13 @@ extern TIM_HandleTypeDef htim6;
 
 void ap_init(void)
 {
-	HAL_TIM_Base_Start_IT(&htim4);
-	HAL_TIM_Base_Start_IT(&htim6);
+//	uart_init();
 
 	led_init();
 	rgb_init();
 
+	HAL_TIM_Base_Start_IT(&htim4);
+	HAL_TIM_Base_Start_IT(&htim6);
 }
 
 void ap_main(void)
@@ -31,6 +32,8 @@ void ap_main(void)
 //		rgb_set_color(RGB_ZONE_V_SHAPE, COLOR_YELLOW);
 		led_toggle(LED_POWER_STAT);
 		delay_ms(1000);
+
+		uart_printf("hello world\r\n");
 	}
 }
 
