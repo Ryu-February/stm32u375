@@ -25,6 +25,7 @@ void ap_init(void)
 	rgb_init();
 
 	step_init_all();
+	lp_stby_init();
 
 	HAL_TIM_Base_Start_IT(&htim2);
 	HAL_TIM_Base_Start_IT(&htim4);

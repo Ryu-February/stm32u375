@@ -10,6 +10,7 @@
 #include "rgb.h"
 #include "btn.h"
 #include "stepper.h"
+#include "lp_stby.h"
 
 
 
@@ -32,4 +33,5 @@ void ap_tim4_callback(void)//10us timer
 void ap_tim6_callback(void)//1ms timer
 {
 	btn_update_1ms();
+	lp_stby_on_1ms();
 }
