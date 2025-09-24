@@ -162,6 +162,51 @@ static inline void gpio_pwm4(
 
 
 #if (_PWM_IMPL == PWM_IMPL_HARD)
+
+static volatile uint8_t s_pwm_forced = 0; // 1: OCMODE_FORCED_* 상태
+
+static void hwpwm_set_ocmode_all(TIM_HandleTypeDef* htim, uint32_t mode)
+{
+    TIM_OC_InitTypeDef s = {0};
+    s.OCMode       = mode;                   // TIM_OCMODE_PWM1 / TIM_OCMODE_FORCED_ACTIVE / TIM_OCMODE_FORCED_INACTIVE
+    s.Pulse        = 0;                      // 모드에 따라 무시됨
+    s.OCPolarity   = TIM_OCPOLARITY_HIGH;    // 모두 동일 극성 보장
+    s.OCFastMode   = TIM_OCFAST_DISABLE;
+
+    HAL_TIM_OC_ConfigChannel(htim, &s, TIM_CHANNEL_1);
+    HAL_TIM_OC_ConfigChannel(htim, &s, TIM_CHANNEL_2);
+    HAL_TIM_OC_ConfigChannel(htim, &s, TIM_CHANNEL_3);
+    HAL_TIM_OC_ConfigChannel(htim, &s, TIM_CHANNEL_4);
+
+    // 재적용
+    HAL_TIM_OC_Start(htim, TIM_CHANNEL_1);
+    HAL_TIM_OC_Start(htim, TIM_CHANNEL_2);
+    HAL_TIM_OC_Start(htim, TIM_CHANNEL_3);
+    HAL_TIM_OC_Start(htim, TIM_CHANNEL_4);
+}
+
+static void hwpwm_use_pwm_mode(void)
+{
+    hwpwm_set_ocmode_all(&htim1, TIM_OCMODE_PWM1);
+    hwpwm_set_ocmode_all(&htim3, TIM_OCMODE_PWM1);
+    s_pwm_forced = 0; // ← 복귀 완료
+}
+
+static void hwpwm_brake(void)
+{
+    hwpwm_set_ocmode_all(&htim1, TIM_OCMODE_FORCED_ACTIVE);
+    hwpwm_set_ocmode_all(&htim3, TIM_OCMODE_FORCED_ACTIVE);
+    s_pwm_forced = 1; // ← FORCED 진입
+}
+
+static void hwpwm_coast(void)
+{
+    hwpwm_set_ocmode_all(&htim1, TIM_OCMODE_FORCED_INACTIVE);
+    hwpwm_set_ocmode_all(&htim3, TIM_OCMODE_FORCED_INACTIVE);
+    s_pwm_forced = 1; // ← FORCED 진입
+}
+
+
 // CCR에 0..255 값 바로 쓰기 (ARR=255 가정)
 static inline void hwpwm_set_left(uint8_t a_plus, uint8_t a_minus,
                                   uint8_t b_plus, uint8_t b_minus)
@@ -368,41 +413,7 @@ void step_stop(void)
 	left_run = right_run = 0;
 }
 
-// ── helpers for HW PWM ────────────────────────────────────────────────
-#if (_PWM_IMPL == PWM_IMPL_HARD)
-static void hwpwm_set_ocmode_all(TIM_HandleTypeDef* htim, uint32_t mode)
-{
-    TIM_OC_InitTypeDef s = {0};
-    s.OCMode     = mode;                   // PWM1 / FORCED_ACTIVE / FORCED_INACTIVE
-    s.Pulse      = 0;
-    s.OCPolarity = TIM_OCPOLARITY_HIGH;
-    s.OCFastMode = TIM_OCFAST_DISABLE;
 
-    HAL_TIM_OC_ConfigChannel(htim, &s, TIM_CHANNEL_1);
-    HAL_TIM_OC_ConfigChannel(htim, &s, TIM_CHANNEL_2);
-    HAL_TIM_OC_ConfigChannel(htim, &s, TIM_CHANNEL_3);
-    HAL_TIM_OC_ConfigChannel(htim, &s, TIM_CHANNEL_4);
-
-    HAL_TIM_OC_Start(htim, TIM_CHANNEL_1);
-    HAL_TIM_OC_Start(htim, TIM_CHANNEL_2);
-    HAL_TIM_OC_Start(htim, TIM_CHANNEL_3);
-    HAL_TIM_OC_Start(htim, TIM_CHANNEL_4);
-}
-
-static inline void hwpwm_brake(void)
-{
-    // 브레이크: 4채널 모두 완전 High (무펄스)
-    hwpwm_set_ocmode_all(&htim1, TIM_OCMODE_FORCED_ACTIVE);
-    hwpwm_set_ocmode_all(&htim3, TIM_OCMODE_FORCED_ACTIVE);
-}
-
-static inline void hwpwm_coast(void)
-{
-    // 코스트: 4채널 모두 완전 Low
-    hwpwm_set_ocmode_all(&htim1, TIM_OCMODE_FORCED_INACTIVE);
-    hwpwm_set_ocmode_all(&htim3, TIM_OCMODE_FORCED_INACTIVE);
-}
-#endif
 
 void step_set_hold(hold_mode_t mode)
 {
@@ -437,15 +448,18 @@ void step_set_hold(hold_mode_t mode)
 #else
     if (g_hold == HOLD_OFF)
     {
-        // 코스트: 강제 Low (PWM 글리치 완전 차단)
+        // 코스트: CCR=0
+//        hwpwm_set_left(0,0,0,0);
+//        hwpwm_set_right(0,0,0,0);
         hwpwm_coast();
     }
     else
     {
-        // 브레이크: 강제 High (정지 토크, 진동 없음)
+        // 브레이크: A+/A- & B+/B- 모두 255로 고정(정지 토크)
+//        hwpwm_set_left(255,255,255,255);
+//        hwpwm_set_right(255,255,255,255);
         hwpwm_brake();
     }
-
 #endif
 }
 
@@ -473,6 +487,10 @@ void odometry_steps_init(void)
 // ---- Compatibility helpers ----
 void step_drive(StepOperation op)
 {
+#if (_PWM_IMPL == PWM_IMPL_HARD)
+    if (op != OP_STOP && g_hold != HOLD_OFF && s_pwm_forced)
+        hwpwm_use_pwm_mode(); // 복귀 보강
+#endif
 	switch(op)
 	{
 		case OP_NONE:
