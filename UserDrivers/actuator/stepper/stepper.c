@@ -166,19 +166,19 @@ static inline void gpio_pwm4(
 static inline void hwpwm_set_left(uint8_t a_plus, uint8_t a_minus,
                                   uint8_t b_plus, uint8_t b_minus)
 {
-    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, a_plus);   // PA8  A+
-    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, a_minus);  // PA9  A-
-    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, b_plus);   // PA10 B+
-    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, b_minus);  // PA11 B-
+    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, a_plus);   // PA8  A+
+    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, a_minus);  // PA9  A-
+    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, b_plus);   // PA10 B+
+    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, b_minus);  // PA11 B-
 }
 
 static inline void hwpwm_set_right(uint8_t a_plus, uint8_t a_minus,
                                    uint8_t b_plus, uint8_t b_minus)
 {
-    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, a_plus);   // PC6  A+
-    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, a_minus);  // PC7  A-
-    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, b_plus);   // PC8  B+
-    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, b_minus);  // PC9  B-
+    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, a_plus);   // PC6  A+
+    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, a_minus);  // PC7  A-
+    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, b_plus);   // PC8  B+
+    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, b_minus);  // PC9  B-
 }
 #endif
 
@@ -368,6 +368,42 @@ void step_stop(void)
 	left_run = right_run = 0;
 }
 
+// ── helpers for HW PWM ────────────────────────────────────────────────
+#if (_PWM_IMPL == PWM_IMPL_HARD)
+static void hwpwm_set_ocmode_all(TIM_HandleTypeDef* htim, uint32_t mode)
+{
+    TIM_OC_InitTypeDef s = {0};
+    s.OCMode     = mode;                   // PWM1 / FORCED_ACTIVE / FORCED_INACTIVE
+    s.Pulse      = 0;
+    s.OCPolarity = TIM_OCPOLARITY_HIGH;
+    s.OCFastMode = TIM_OCFAST_DISABLE;
+
+    HAL_TIM_OC_ConfigChannel(htim, &s, TIM_CHANNEL_1);
+    HAL_TIM_OC_ConfigChannel(htim, &s, TIM_CHANNEL_2);
+    HAL_TIM_OC_ConfigChannel(htim, &s, TIM_CHANNEL_3);
+    HAL_TIM_OC_ConfigChannel(htim, &s, TIM_CHANNEL_4);
+
+    HAL_TIM_OC_Start(htim, TIM_CHANNEL_1);
+    HAL_TIM_OC_Start(htim, TIM_CHANNEL_2);
+    HAL_TIM_OC_Start(htim, TIM_CHANNEL_3);
+    HAL_TIM_OC_Start(htim, TIM_CHANNEL_4);
+}
+
+static inline void hwpwm_brake(void)
+{
+    // 브레이크: 4채널 모두 완전 High (무펄스)
+    hwpwm_set_ocmode_all(&htim1, TIM_OCMODE_FORCED_ACTIVE);
+    hwpwm_set_ocmode_all(&htim3, TIM_OCMODE_FORCED_ACTIVE);
+}
+
+static inline void hwpwm_coast(void)
+{
+    // 코스트: 4채널 모두 완전 Low
+    hwpwm_set_ocmode_all(&htim1, TIM_OCMODE_FORCED_INACTIVE);
+    hwpwm_set_ocmode_all(&htim3, TIM_OCMODE_FORCED_INACTIVE);
+}
+#endif
+
 void step_set_hold(hold_mode_t mode)
 {
 	g_hold = mode;
@@ -401,16 +437,15 @@ void step_set_hold(hold_mode_t mode)
 #else
     if (g_hold == HOLD_OFF)
     {
-        // 코스트: CCR=0
-        hwpwm_set_left(0,0,0,0);
-        hwpwm_set_right(0,0,0,0);
+        // 코스트: 강제 Low (PWM 글리치 완전 차단)
+        hwpwm_coast();
     }
     else
     {
-        // 브레이크: A+/A- & B+/B- 모두 255로 고정(정지 토크)
-        hwpwm_set_left(255,255,255,255);
-        hwpwm_set_right(255,255,255,255);
+        // 브레이크: 강제 High (정지 토크, 진동 없음)
+        hwpwm_brake();
     }
+
 #endif
 }
 
