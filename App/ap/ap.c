@@ -48,6 +48,9 @@ void ap_main(void)
 
 			switch (pressed)
 			{
+				case BTN_GO:
+					op = OP_STOP;
+					break;
 				case BTN_FORWARD:
 					op = OP_FORWARD;
 					break;
@@ -60,6 +63,9 @@ void ap_main(void)
 				case BTN_RIGHT:
 					op = OP_TURN_RIGHT;
 					break;
+				default:
+					break;
+
 			}
 		}
 		step_drive(op);
