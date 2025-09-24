@@ -48,7 +48,8 @@
 // TIM_TICK : free‑running tick for step period (e.g., 1us per tick)
 extern TIM_HandleTypeDef htim2; // use as PWM CNT (ARR=255)
 //extern TIM_HandleTypeDef htim16; // use as tick source (1us CNT)
-
+extern TIM_HandleTypeDef htim1;
+extern TIM_HandleTypeDef htim3;
 
 
 
@@ -160,6 +161,27 @@ static inline void gpio_pwm4(
 }
 
 
+#if (_PWM_IMPL == PWM_IMPL_HARD)
+// CCR에 0..255 값 바로 쓰기 (ARR=255 가정)
+static inline void hwpwm_set_left(uint8_t a_plus, uint8_t a_minus,
+                                  uint8_t b_plus, uint8_t b_minus)
+{
+    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, a_plus);   // PA8  A+
+    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, a_minus);  // PA9  A-
+    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, b_plus);   // PA10 B+
+    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, b_minus);  // PA11 B-
+}
+
+static inline void hwpwm_set_right(uint8_t a_plus, uint8_t a_minus,
+                                   uint8_t b_plus, uint8_t b_minus)
+{
+    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, a_plus);   // PC6  A+
+    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, a_minus);  // PC7  A-
+    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, b_plus);   // PC8  B+
+    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, b_minus);  // PC9  B-
+}
+#endif
+
 static inline void apply_pwm_micro(StepLL* m, uint8_t now)
 {
 #if (_USE_STEP_MODE == _STEP_MODE_MICRO)
@@ -168,26 +190,50 @@ static inline void apply_pwm_micro(StepLL* m, uint8_t now)
 	//(STEP_MASK >> 2) == 8 == 90°(difference sin with cos)
 	//sin파와 cos파의 위상 차가 90도가 나니까 +8을 한 거임 +8은 32를 360도로 치환했을 때 90도를 의미함
 
-	gpio_pwm4(m->in1p, m->in1b, m->in2p, m->in2b, m->in3p, m->in3b, m->in4p, m->in4b, now, vA, vB);
+
+#if (_PWM_IMPL == PWM_IMPL_SOFT)
+    // 기존 소프트웨어 PWM (BSRR 토글)
+    gpio_pwm4(m->in1p, m->in1b, m->in2p, m->in2b, m->in3p, m->in3b, m->in4p, m->in4b,
+              now, vA, vB);
+#else
+    // 하드웨어 PWM: 채널 4개에 vA, 255-vA / vB, 255-vB 적재
+    if (m == &left)
+        hwpwm_set_left(vA, (uint8_t)(255 - vA), vB, (uint8_t)(255 - vB));
+    else
+        hwpwm_set_right(vA, (uint8_t)(255 - vA), vB, (uint8_t)(255 - vB));
+#endif
 #else
 	(void)m; (void)now; // silent
 #endif
 }
 
 
+
+
 static inline void apply_coils_table(StepLL* m)
 {
 #if (_USE_STEP_MODE != _STEP_MODE_MICRO)
-	const uint8_t* s = step_table[m->step_idx & STEP_MASK];
-	// Map to BSRR writes (set or reset)
-	uint32_t set1 = s[0]? m->in1b:0, rst1 = s[0]?0:((uint32_t)m->in1b<<16);
-	uint32_t set2 = s[1]? m->in2b:0, rst2 = s[1]?0:((uint32_t)m->in2b<<16);
-	uint32_t set3 = s[2]? m->in3b:0, rst3 = s[2]?0:((uint32_t)m->in3b<<16);
-	uint32_t set4 = s[3]? m->in4b:0, rst4 = s[3]?0:((uint32_t)m->in4b<<16);
-	m->in1p->BSRR = set1 | rst1;
-	m->in2p->BSRR = set2 | rst2;
-	m->in3p->BSRR = set3 | rst3;
-	m->in4p->BSRR = set4 | rst4;
+    const uint8_t* s = step_table[m->step_idx & STEP_MASK]; // {A+,A-,B+,B-} = {0/1}
+
+#if (_PWM_IMPL == PWM_IMPL_SOFT)
+    uint32_t set1 = s[0]? m->in1b:0, rst1 = s[0]?0:((uint32_t)m->in1b<<16);
+    uint32_t set2 = s[1]? m->in2b:0, rst2 = s[1]?0:((uint32_t)m->in2b<<16);
+    uint32_t set3 = s[2]? m->in3b:0, rst3 = s[2]?0:((uint32_t)m->in3b<<16);
+    uint32_t set4 = s[3]? m->in4b:0, rst4 = s[3]?0:((uint32_t)m->in4b<<16);
+    m->in1p->BSRR = set1 | rst1;
+    m->in2p->BSRR = set2 | rst2;
+    m->in3p->BSRR = set3 | rst3;
+    m->in4p->BSRR = set4 | rst4;
+#else
+    uint8_t Aplus  = s[0] ? 255 : 0;
+    uint8_t Aminus = s[1] ? 255 : 0;
+    uint8_t Bplus  = s[2] ? 255 : 0;
+    uint8_t Bminus = s[3] ? 255 : 0;
+
+    if (m == &left)  hwpwm_set_left(Aplus, Aminus, Bplus, Bminus);
+    else             hwpwm_set_right(Aplus, Aminus, Bplus, Bminus);
+#endif
+
 #endif
 }
 
@@ -211,6 +257,19 @@ void step_init_all(void)
 	left_run = right_run = 0;
 	g_hold = HOLD_BRAKE;
 
+#if (_PWM_IMPL == PWM_IMPL_HARD)
+    // 타이머 PWM 스타트 (PSC=17, ARR=255 는 CubeMX에서 설정되어 있다고 가정)
+    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
+    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
+    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
+    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
+
+    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
+    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3);
+    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4);
+#endif
+
 	step_stop();
 }
 
@@ -223,43 +282,44 @@ void step_idx_init(void)
 
 void step_tick_isr(void)
 {
-	// Call this from your actual ISR (e.g., TIM16 IRQ) at ~10us period
-	uint8_t pwm_now = (uint8_t)TIM_PWM_CNT; // (uint8_t) -> 'pwm_now' must be 0-255
-	uint32_t tick_now = read_tick32(); // free‑running tick (wraps) | tim2
+#if (_PWM_IMPL == PWM_IMPL_SOFT)
+    uint8_t  pwm_now  = (uint8_t)TIM_PWM_CNT; // 0..255
+#else
+    uint8_t  pwm_now  = 0; // HW PWM에서는 사용 안 함
+#endif
+    uint32_t tick_now = read_tick32();
 
+    if (g_hold == HOLD_OFF)
+    {
+#if (_PWM_IMPL == PWM_IMPL_SOFT)
+        // 기존: 출력 Low
+        left.in1p->BSRR = ((uint32_t)left.in1b << 16);
+        left.in2p->BSRR = ((uint32_t)left.in2b << 16);
+        left.in3p->BSRR = ((uint32_t)left.in3b << 16);
+        left.in4p->BSRR = ((uint32_t)left.in4b << 16);
 
-	// If coils are off, ensure outputs low and skip any motion
-	if (g_hold == HOLD_OFF)
-	{
-		left.in1p->BSRR = ((uint32_t)left.in1b << 16);
-		left.in2p->BSRR = ((uint32_t)left.in2b << 16);
-		left.in3p->BSRR = ((uint32_t)left.in3b << 16);
-		left.in4p->BSRR = ((uint32_t)left.in4b << 16);
+        right.in1p->BSRR = ((uint32_t)right.in1b << 16);
+        right.in2p->BSRR = ((uint32_t)right.in2b << 16);
+        right.in3p->BSRR = ((uint32_t)right.in3b << 16);
+        right.in4p->BSRR = ((uint32_t)right.in4b << 16);
+#else
+        // HW: 모든 CCR=0
+        hwpwm_set_left(0,0,0,0);
+        hwpwm_set_right(0,0,0,0);
+#endif
+        return;
+    }
 
-		right.in1p->BSRR = ((uint32_t)right.in1b << 16);
-		right.in2p->BSRR = ((uint32_t)right.in2b << 16);
-		right.in3p->BSRR = ((uint32_t)right.in3b << 16);
-		right.in4p->BSRR = ((uint32_t)right.in4b << 16);
-		return;
-	}
+#if (_USE_STEP_MODE == _STEP_MODE_MICRO)
+    apply_pwm_micro(&left,  pwm_now);
+    apply_pwm_micro(&right, pwm_now);
+#else
+    apply_coils_table(&left);
+    apply_coils_table(&right);
+#endif
 
-	#if (_USE_STEP_MODE == _STEP_MODE_MICRO)
-	apply_pwm_micro(&left, pwm_now);
-	apply_pwm_micro(&right, pwm_now);
-	#else
-	apply_coils_table(&left);
-	apply_coils_table(&right);
-	#endif
-//	if (left_run)
-//	{
-//		try_advance(&left, tick_now);
-//	}
-//	if (right_run)
-//	{
-//		try_advance(&right, tick_now);
-//	}
-	try_advance(&left, tick_now);
-	try_advance(&right, tick_now);
+    try_advance(&left,  tick_now);
+    try_advance(&right, tick_now);
 }
 
 
@@ -312,6 +372,7 @@ void step_set_hold(hold_mode_t mode)
 {
 	g_hold = mode;
 
+#if (_PWM_IMPL == PWM_IMPL_SOFT)
 	if (g_hold == HOLD_OFF)// Coast: INx=0,0
 	{
 		// Immediately de-energize coils
@@ -337,6 +398,20 @@ void step_set_hold(hold_mode_t mode)
 		right.in3p->BSRR = right.in3b;
 		right.in4p->BSRR = right.in4b;
 	}
+#else
+    if (g_hold == HOLD_OFF)
+    {
+        // 코스트: CCR=0
+        hwpwm_set_left(0,0,0,0);
+        hwpwm_set_right(0,0,0,0);
+    }
+    else
+    {
+        // 브레이크: A+/A- & B+/B- 모두 255로 고정(정지 토크)
+        hwpwm_set_left(255,255,255,255);
+        hwpwm_set_right(255,255,255,255);
+    }
+#endif
 }
 
 void step_coast_stop(void)

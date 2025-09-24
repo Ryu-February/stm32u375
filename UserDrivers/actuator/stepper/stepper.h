@@ -86,6 +86,13 @@
 #endif
 
 
+// 선택: SW PWM vs HW PWM
+#define PWM_IMPL_SOFT 0
+#define PWM_IMPL_HARD 1
+#ifndef _PWM_IMPL
+#define _PWM_IMPL PWM_IMPL_HARD   // 기본은 기존 SW PWM 유지
+#endif
+
 // ---------------- Types ----------------
 // ISR‑safe POD struct for one motor
 typedef struct
