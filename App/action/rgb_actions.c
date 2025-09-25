@@ -62,6 +62,7 @@ void app_rgb_actions_poll(void)
 
 #if !APP_RGB_ACTIONS_ISR_APPLY
     // 색 적용은 메인 루프에서 수행 → ISR 부하 최소화
+    rgb_set_color(RGB_ZONE_EYES, color_by_button(btn));
     rgb_set_color(RGB_ZONE_V_SHAPE, color_by_button(btn));
 #endif
 
