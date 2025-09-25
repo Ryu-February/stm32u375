@@ -19,6 +19,8 @@
 #include "rgb.h"
 #include "btn.h"
 #include "color.h"
+#include "calib.h"
+#include "flash.h"
 #include "mode_sw.h"
 #include "rgb_actions.h"
 

@@ -18,6 +18,7 @@ typedef struct
 }btn_ch_cfg_t;
 
 
+
 static const btn_ch_cfg_t btn_cfg[BTN_COUNT] =
 {
 		[BTN_GO]		= { GPIOB, GPIO_PIN_0  },
@@ -32,10 +33,13 @@ static const btn_ch_cfg_t btn_cfg[BTN_COUNT] =
 
 typedef struct
 {
-	volatile uint8_t stable;		// 1 = pressed
-	volatile uint8_t cntr;
-	volatile uint8_t press_flag;
-}btn_state_t;
+    volatile uint8_t  stable;      // 1 = pressed
+    volatile uint8_t  cntr;
+    volatile uint8_t  press_flag;  // 눌림 엣지(pop)
+    volatile uint16_t hold_ms;     // 누르고 있는 누적 시간(ms)
+    volatile uint8_t  long_reported; // 이번 눌림 동안 long-press를 이미 보고했는지
+} btn_state_t;
+
 
 static btn_state_t 	s_btn[BTN_COUNT];
 static uint32_t 	s_uptime_ms = 0;	//btn_update_1ms()가 올려주는 부팅 후 경과시간(ms)
@@ -60,10 +64,12 @@ void btn_init(void)
     // GPIO 클록/모드/풀업은 CubeMX에서 이미 설정되어 있다고 가정
     for (int i = 0; i < BTN_COUNT; i++)
     {
-        uint8_t raw	        = btn_read_raw((btn_id_t)i);
-        s_btn[i].stable     = raw;
-        s_btn[i].cntr       = 0u;
-        s_btn[i].press_flag = 0u;
+        uint8_t raw          = btn_read_raw((btn_id_t)i);
+        s_btn[i].stable      = raw;
+        s_btn[i].cntr        = 0u;
+        s_btn[i].press_flag  = 0u;
+        s_btn[i].hold_ms     = 0u;
+        s_btn[i].long_reported = 0u;
     }
     s_uptime_ms = 0;
 }
@@ -75,12 +81,26 @@ void btn_update_1ms(void)
         // ★ 비활성 버튼은 즉시 무시 (카운터/플래그 정리)
         if (!btn_enabled((btn_id_t)i))
         {
-            s_btn[i].cntr       = 0u;
-            s_btn[i].press_flag = 0u;
+        	s_btn[i].cntr          = 0u;
+			s_btn[i].press_flag    = 0u;
+			s_btn[i].hold_ms       = 0u;
+			s_btn[i].long_reported = 0u;
             continue;
         }
 
         uint8_t raw = btn_read_raw((btn_id_t)i);
+
+		// hold ms 누적/리셋
+		if (raw)
+		{
+		   if (s_btn[i].hold_ms < 0xFFFFu)
+			   s_btn[i].hold_ms++;
+		}
+		else
+		{
+		   s_btn[i].hold_ms       = 0u;
+		   s_btn[i].long_reported = 0u; // 손을 뗐으면 다음 long을 다시 허용
+		}
 
         if (raw == s_btn[i].stable)
         {
@@ -137,6 +157,20 @@ bool btn_pop_any_press(btn_id_t *out_id)
             if (out_id) *out_id = (btn_id_t)i;
             	return true;
         }
+    }
+    return false;
+}
+
+bool btn_pop_long_press(btn_id_t id, uint16_t threshold_ms)
+{
+    if (!btn_enabled(id))
+        return false;
+
+    // 현재 누르고 있고, 임계 시간 이상이며, 아직 보고 안 했을 때 1회 true
+    if (s_btn[id].stable && (s_btn[id].hold_ms >= threshold_ms) && !s_btn[id].long_reported)
+    {
+        s_btn[id].long_reported = 1u;
+        return true;
     }
     return false;
 }

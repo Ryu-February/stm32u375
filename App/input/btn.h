@@ -20,6 +20,7 @@
                          BTN_BIT(BTN_FORWARD) | BTN_BIT(BTN_BACKWARD) | \
                          BTN_BIT(BTN_LEFT) | BTN_BIT(BTN_RIGHT) )
 #define BTN_MASK_BASE3 ( BTN_BIT(BTN_GO) | BTN_BIT(BTN_DELETE) | BTN_BIT(BTN_RESUME) )
+#define BTN_MASK_LINE  ( BTN_MASK_BASE3 | BTN_BIT(BTN_FORWARD) )   // ★ 라인트레이싱에서 전진 추가
 
 typedef enum
 {
@@ -42,6 +43,8 @@ void btn_update_1ms(void);
 bool btn_is_pressed(btn_id_t id);
 bool btn_get_press(btn_id_t id);
 bool btn_pop_any_press(btn_id_t *out_id);
+// 길게 누름 발생을 1회 팝(pop)하는 API
+bool btn_pop_long_press(btn_id_t id, uint16_t threshold_ms);
 
 void btn_print_states(void);
 void btn_print_events(void);

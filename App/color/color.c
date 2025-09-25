@@ -7,10 +7,9 @@
 
 
 #include "color.h"
-//#include "flash.h"
+#include "flash.h"
 #include "uart.h"
 #include "i2c.h"
-#include <stdlib.h>
 
 reference_entry_t color_reference_tbl_left[COLOR_COUNT];
 reference_entry_t color_reference_tbl_right[COLOR_COUNT];
@@ -111,7 +110,7 @@ void save_color_reference(uint8_t sensor_side, color_t color, uint16_t r, uint16
     }
 
     // Flash 저장 (플랫폼 함수)
-//    flash_write_color_reference(sensor_side, color, entry);
+    flash_write_color_reference(sensor_side, color, entry);
 }
 
 color_t classify_color(uint8_t left_right, uint16_t r, uint16_t g, uint16_t b, uint16_t ir)
@@ -183,8 +182,8 @@ void load_color_reference_table(void)
 {
     for (int i = 0; i < COLOR_COUNT; i++)
     {
-//        color_reference_tbl_left[i]  = flash_read_color_reference(BH1749_ADDR_LEFT,  i);
-//        color_reference_tbl_right[i] = flash_read_color_reference(BH1749_ADDR_RIGHT, i);
+        color_reference_tbl_left[i]  = flash_read_color_reference(BH1749_ADDR_LEFT,  i);
+        color_reference_tbl_right[i] = flash_read_color_reference(BH1749_ADDR_RIGHT, i);
     }
 }
 
