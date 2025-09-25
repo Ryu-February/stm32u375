@@ -9,6 +9,8 @@
 #include "btn.h"
 #include "uart.h"
 
+
+
 typedef struct
 {
 	GPIO_TypeDef *port;
@@ -37,6 +39,8 @@ typedef struct
 
 static btn_state_t 	s_btn[BTN_COUNT];
 static uint32_t 	s_uptime_ms = 0;	//btn_update_1ms()가 올려주는 부팅 후 경과시간(ms)
+// 활성화 마스크: 1=활성, 0=비활성
+static uint32_t 	s_enable_mask = 0xFFFFFFFFu; // 기본 전체 활성
 
 
 static inline uint8_t btn_read_raw(btn_id_t id)
@@ -46,6 +50,10 @@ static inline uint8_t btn_read_raw(btn_id_t id)
 	return (st == GPIO_PIN_RESET) ? 1u : 0u;// Low면 눌림
 }
 
+static inline bool btn_enabled(btn_id_t id)
+{
+    return ((s_enable_mask >> id) & 1u) != 0u;
+}
 
 void btn_init(void)
 {
@@ -62,37 +70,52 @@ void btn_init(void)
 
 void btn_update_1ms(void)
 {
-	for (int i = 0; i < BTN_COUNT; i++)
-	{
-		uint8_t raw = btn_read_raw((btn_id_t)i);
+    for (int i = 0; i < BTN_COUNT; i++)
+    {
+        // ★ 비활성 버튼은 즉시 무시 (카운터/플래그 정리)
+        if (!btn_enabled((btn_id_t)i))
+        {
+            s_btn[i].cntr       = 0u;
+            s_btn[i].press_flag = 0u;
+            continue;
+        }
 
-		if (raw == s_btn[i].stable)
-		{
-			s_btn[i].cntr = 0u;           // 변화 없음
-			continue;
-		}
+        uint8_t raw = btn_read_raw((btn_id_t)i);
 
-		if (++s_btn[i].cntr >= BTN_DEBOUNCE_MS)
-		{
-			uint8_t prev = s_btn[i].stable;
-			s_btn[i].stable = raw;        // 변화 확정
-			s_btn[i].cntr = 0u;
+        if (raw == s_btn[i].stable)
+        {
+            s_btn[i].cntr = 0u;
+            continue;
+        }
 
-			if (prev == 0u && raw == 1u)  // 눌림 엣지(0->1)
-			{
-				s_btn[i].press_flag = 1u;
-			}
-		}
-	}
+        if (++s_btn[i].cntr >= BTN_DEBOUNCE_MS)
+        {
+            uint8_t prev   = s_btn[i].stable;
+            s_btn[i].stable = raw;
+            s_btn[i].cntr   = 0u;
+
+            if (prev == 0u && raw == 1u)  // 눌림 엣지
+            {
+                s_btn[i].press_flag = 1u; // 여기선 enabled가 보장됨
+            }
+        }
+    }
 }
 
 bool btn_is_pressed(btn_id_t id)
 {
+	// 비활성일 땐 항상 not-pressed로 간주
+	if (!btn_enabled(id))
+		return false;
+
 	return (s_btn[id].stable != 0u);
 }
 
 bool btn_get_press(btn_id_t id)
 {
+	if (!btn_enabled(id))
+		return false;
+
 	if (s_btn[id].press_flag)
 	{
 		s_btn[id].press_flag = 0u;
@@ -105,6 +128,9 @@ bool btn_pop_any_press(btn_id_t *out_id)
 {
     for (int i = 0; i < BTN_COUNT; i++)
     {
+    	if (!btn_enabled((btn_id_t)i))
+    		continue;
+
         if (s_btn[i].press_flag)
         {
             s_btn[i].press_flag = 0u;
@@ -115,6 +141,21 @@ bool btn_pop_any_press(btn_id_t *out_id)
     return false;
 }
 
+void btn_enable_mask_set(uint32_t mask)
+{
+    s_enable_mask = mask;
+    // 비활성 버튼들의 대기 중 이벤트는 폐기
+    for (int i = 0; i < BTN_COUNT; i++)
+    {
+        if (((s_enable_mask >> i) & 1u) == 0u)
+            s_btn[i].press_flag = 0u;
+    }
+}
+
+uint32_t btn_enable_mask_get(void)
+{
+    return s_enable_mask;
+}
 
 static const char *btn_name(btn_id_t id)
 {

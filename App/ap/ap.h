@@ -17,6 +17,7 @@
 #include "led.h"
 #include "rgb.h"
 #include "btn.h"
+#include "mode_sw.h"
 #include "rgb_actions.h"
 
 
