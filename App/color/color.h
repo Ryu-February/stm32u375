@@ -48,6 +48,8 @@
 // ==== App limits ====
 #define MAX_INSERTED_COMMANDS     20
 
+
+
 typedef struct
 {
     uint16_t red;
@@ -70,6 +72,7 @@ typedef struct
     uint8_t   _pad[1];
     uint64_t  offset;     // 밝기 보정/플래시에 저장용
 } reference_entry_t;
+
 
 typedef enum
 {
