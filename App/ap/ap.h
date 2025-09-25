@@ -12,11 +12,13 @@
 
 #include "utils.h"
 
+#include "i2c.h"
 #include "uart.h"
 
 #include "led.h"
 #include "rgb.h"
 #include "btn.h"
+#include "color.h"
 #include "mode_sw.h"
 #include "rgb_actions.h"
 

@@ -16,13 +16,15 @@ extern TIM_HandleTypeDef htim6;
 
 static void apply_mode_button_mask(mode_sw_t m);
 
-
 void ap_init(void)
 {
+	i2c_init();
 	uart_init();
 
 	led_init();
 	rgb_init();
+
+	color_init();
 
 	lp_stby_init();
 	mode_sw_init();
@@ -82,7 +84,10 @@ void ap_main(void)
 		}
 		step_drive(op);
 
-		uart_printf("cur_sw mode: %s\r\n", mode_sw_name(mode_sw_get()));
+
+		classify_color_side(BH1749_ADDR_LEFT);
+		classify_color_side(BH1749_ADDR_RIGHT);
+//		delay_ms(120);
 	}
 }
 
