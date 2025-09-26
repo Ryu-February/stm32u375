@@ -102,6 +102,8 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
+  // ★ 가장 먼저: 켤 때 1초 길게 눌림 검증
+//  lp_stby_boot_gate();
 
   /* USER CODE END SysInit */
 
