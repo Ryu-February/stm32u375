@@ -17,7 +17,7 @@
 #endif
 
 #ifndef LP_STBY_HOLD_MS
-#define LP_STBY_HOLD_MS      3000
+#define LP_STBY_HOLD_MS      1000
 #endif
 
 
