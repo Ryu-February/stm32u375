@@ -41,6 +41,10 @@ void ap_init(void)
 	HAL_TIM_Base_Start_IT(&htim2);
 	HAL_TIM_Base_Start_IT(&htim4);
 	HAL_TIM_Base_Start_IT(&htim6);
+
+	load_color_reference_table();
+	calculate_color_brightness_offset();
+	debug_print_color_reference_table();
 }
 
 
@@ -81,6 +85,8 @@ void ap_main(void)
             {
                 color_calib_enter();
                 apply_mode_button_mask(cur_mode, true);  // 캘리 중 버튼 제한(선택)
+                flash_erase_color_table(BH1749_ADDR_LEFT);
+				flash_erase_color_table(BH1749_ADDR_RIGHT);
                 // 현재 타깃 안내
                 int idx = color_calib_index();
                 int tot = color_calib_total();
@@ -96,13 +102,6 @@ void ap_main(void)
 			// 캘리브레이션 진행 중
 			if (color_calib_is_active())
 			{
-				static bool init = true;
-				if(init)
-				{
-					flash_erase_color_table(BH1749_ADDR_LEFT);
-					flash_erase_color_table(BH1749_ADDR_RIGHT);
-					init = false;
-				}
 
 				// FORWARD 딸깍 → 한 단계 진행
 				if (pressed == BTN_FORWARD)

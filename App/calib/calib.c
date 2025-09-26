@@ -52,13 +52,17 @@ void calib_on_forward_click(void)
     if (s_calib != CALIB_ACTIVE)
         return;
 
-    color_t target = s_calib_order[s_calib_idx];
+//    color_t target = s_calib_order[s_calib_idx];
 
     // 한 단계 진행을 외부 태스크에 위임
 //    ap_task_color_calibration();
 
     bh1749_color_data_t left  = bh1749_read_rgbir(BH1749_ADDR_LEFT);
 	bh1749_color_data_t right = bh1749_read_rgbir(BH1749_ADDR_RIGHT);
+
+	uart_printf("---------------------------------------------------------------");
+
+	uart_printf("color set: [%s]\r\n", color_to_string(s_calib_idx));
 
 	uart_printf("[LEFT]  R:%u G:%u B:%u C:%u\r\n",
 				left.red, left.green, left.blue, left.ir);
@@ -69,17 +73,20 @@ void calib_on_forward_click(void)
 	save_color_reference(BH1749_ADDR_LEFT,  s_calib_idx, left.red, left.green, left.blue);
 	save_color_reference(BH1749_ADDR_RIGHT, s_calib_idx, right.red, right.green, right.blue);
 
-    uart_printf("[CAL] captured color=%d\r\n", (int)target);
+	s_calib_idx++;
 
-    s_calib_idx++;
     if (s_calib_idx >= CALIB_COUNT)
     {
         calib_exit();
+        load_color_reference_table();
+        debug_print_color_reference_table();
     }
     else
     {
         calib_prompt_current();
     }
+
+    uart_printf("---------------------------------------------------------------");
 }
 
 /* --- 보조 getter ------------------------------------------------------- */
