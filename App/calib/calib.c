@@ -60,7 +60,7 @@ void calib_on_forward_click(void)
     bh1749_color_data_t left  = bh1749_read_rgbir(BH1749_ADDR_LEFT);
 	bh1749_color_data_t right = bh1749_read_rgbir(BH1749_ADDR_RIGHT);
 
-	uart_printf("---------------------------------------------------------------");
+	uart_printf("---------------------------------------------------------------\r\n");
 
 	uart_printf("color set: [%s]\r\n", color_to_string(s_calib_idx));
 
@@ -86,7 +86,7 @@ void calib_on_forward_click(void)
         calib_prompt_current();
     }
 
-    uart_printf("---------------------------------------------------------------");
+    uart_printf("---------------------------------------------------------------\r\n");
 }
 
 /* --- 보조 getter ------------------------------------------------------- */

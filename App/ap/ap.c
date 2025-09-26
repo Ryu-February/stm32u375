@@ -32,6 +32,8 @@ void ap_init(void)
 
 	lp_stby_init();
 	mode_sw_init();
+	btn_init();
+	btn_action_init();
 
 	step_init_all();
     // [PATCH] 부팅 직후 확실히 정지 1회
@@ -123,45 +125,56 @@ void ap_main(void)
 					// 버튼 모드에서만 7개 조작 반영
 					switch (pressed)
 					{
-						case BTN_GO:       op_req = OP_STOP;        break;
-						case BTN_FORWARD:  op_req = OP_FORWARD;     break;
-						case BTN_BACKWARD: op_req = OP_REVERSE;     break;
-						case BTN_LEFT:     op_req = OP_TURN_LEFT;   break;
-						case BTN_RIGHT:    op_req = OP_TURN_RIGHT;  break;
+						case BTN_FORWARD:
+						case BTN_BACKWARD:
+						case BTN_LEFT:
+						case BTN_RIGHT:
+							btn_action_plan(pressed);  // ★ 딱 1회 실행
+							break;
+
+						case BTN_GO:
 						case BTN_DELETE:
 						case BTN_RESUME:
-						default:           break;
+							btn_action_stop();         // 단발 모드에선 STOP로 처리
+							break;
+
+						default:
+							break;
 					}
 				}
-				else if (cur_mode == MODE_LINE_TRACING)
-				{
-					// 필요 시 GO만 정지로 해석 (기본은 이미 STOP이므로 생략 가능)
-					if (pressed == BTN_GO) op_req = OP_STOP;
-				}
-				else /* MODE_CARD */
-				{
-					if (pressed == BTN_GO) op_req = OP_STOP;
-				}
 
-				app_rgb_actions_notify_press(pressed);
-				app_rgb_actions_poll();
 			}
 		}
-		// 캘리브레이션 활성 시엔 무조건 STOP 유지
-		if (color_calib_is_active())
-			op_req = OP_STOP;
 
-		if(cur_mode != MODE_BUTTON)
-			op_req = OP_STOP;
-		// [PATCH] 변경이 있을 때만 모터에 명령
-		if (op_req != s_current_op)
+		// --- 실행 진행 ---
+		if (now_calib_active || cur_mode != MODE_BUTTON)
 		{
-			step_drive(op_req);
-			s_current_op = op_req;
+			if (btn_action_is_running())
+				btn_action_stop();
 		}
+		else
+		{
+			btn_action_service();
+		}
+		app_rgb_actions_notify_press(pressed);
+		app_rgb_actions_poll();
+		// 캘리브레이션 활성 시엔 무조건 STOP 유지
+//		if (color_calib_is_active())
+//			op_req = OP_STOP;
+//
+//		if(cur_mode != MODE_BUTTON)
+//			op_req = OP_STOP;
+//		// [PATCH] 변경이 있을 때만 모터에 명령
+//		if (op_req != s_current_op)
+//		{
+//			step_drive(op_req);
+//			s_current_op = op_req;
+//		}
 
-		classify_color_side(BH1749_ADDR_LEFT);
-		classify_color_side(BH1749_ADDR_RIGHT);
+//		uint8_t left  = classify_color_side(BH1749_ADDR_LEFT);
+//		uint8_t right = classify_color_side(BH1749_ADDR_RIGHT);
+//
+//		uart_printf("[LEFT: %s] | [RIGHT: %s]\r\n", color_to_string(left), color_to_string(right));
 //		delay_ms(120);
 	}
 }
