@@ -24,6 +24,8 @@
 #include "mode_sw.h"
 #include "btn_prog.h"
 #include "btn_action.h"
+#include "card_prog.h"
+#include "card_action.h"
 #include "rgb_actions.h"
 
 

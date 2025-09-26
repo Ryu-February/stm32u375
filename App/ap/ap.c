@@ -16,8 +16,6 @@ extern TIM_HandleTypeDef htim6;
 
 static void apply_mode_button_mask(mode_sw_t m, bool calib_active);
 
-// [PATCH] 마지막으로 보낸 모터 명령 기억
-static StepOperation s_current_op = OP_STOP;   // 래치된 현재 동작
 
 void ap_init(void)
 {
@@ -32,14 +30,19 @@ void ap_init(void)
 
 	lp_stby_init();
 	mode_sw_init();
+
 	btn_init();
 	btn_prog_init();
 	btn_action_init();
 
+	card_prog_init();
+	card_action_init();
+
+
 	step_init_all();
     // [PATCH] 부팅 직후 확실히 정지 1회
-	s_current_op = OP_STOP;
-    step_drive(s_current_op);
+//	s_current_op = OP_STOP;
+//    step_drive(s_current_op);
 
 	HAL_TIM_Base_Start_IT(&htim2);
 	HAL_TIM_Base_Start_IT(&htim4);
@@ -61,6 +64,7 @@ void ap_main(void)
 
 	while(1)
 	{
+		// --- 모드 변경 처리 ---
         mode_sw_t m;
         if (mode_sw_changed(&m) || cur_mode == MODE_INVALID)
         {
@@ -69,7 +73,7 @@ void ap_main(void)
             uart_printf("[MODE] %s\r\n", mode_sw_name(cur_mode));
         }
 
-        // 2) ★ 캘리 상태 변화 반영(핵심)
+        // --- 캘리 상태 변화 처리 ---
         bool now_calib_active = color_calib_is_active();
         if (now_calib_active != prev_calib_active)
         {
@@ -79,7 +83,7 @@ void ap_main(void)
                         now_calib_active ? "ACTIVE" : "IDLE");
         }
 
-        /* 2) LINE_TRACING에서 FORWARD 3초 길게 → 캘리 진입 */
+        // --- (옵션) 라인트레이싱에서 3초 길게 FORWARD → 캘리 진입 ---
         if (cur_mode == MODE_LINE_TRACING && !color_calib_is_active())
         {
             if (btn_pop_long_press(BTN_FORWARD, 3000))   // 3000ms
@@ -95,6 +99,15 @@ void ap_main(void)
                 uart_printf("[CAL] enter %d/%d, target=%d\r\n", idx + 1, tot, (int)tgt);
             }
         }
+
+        // --- 카드 모드에 센서 피드 (양쪽 동일일 때만 큐잉) ---
+		card_prog_set_mode(cur_mode);   // 모드 알려주기(내부에서 비활성 처리)
+		if (cur_mode == MODE_CARD && !now_calib_active)
+		{
+			uint8_t left  = classify_color_side(BH1749_ADDR_LEFT);
+			uint8_t right = classify_color_side(BH1749_ADDR_RIGHT);
+			card_prog_on_dual_equal(left, right);   // 동일 색만 enqueue/반복 처리
+		}
 
         btn_id_t pressed;
         // [PATCH] 루프 기본값: 항상 STOP
@@ -154,6 +167,12 @@ void ap_main(void)
 		{
 		    btn_prog_service(cur_mode, false);
 		}
+
+		if(!color_calib_is_active() || cur_mode == MODE_CARD)
+		{
+			card_prog_service();
+		}
+
 
 		app_rgb_actions_notify_press(pressed);
 		app_rgb_actions_poll();

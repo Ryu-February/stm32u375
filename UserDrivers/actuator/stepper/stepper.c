@@ -316,6 +316,7 @@ void step_init_all(void)
 #endif
 
 	step_stop();
+	step_drive(OP_STOP);
 }
 
 
