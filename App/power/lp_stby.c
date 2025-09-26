@@ -72,6 +72,7 @@ static void reenter_standby_now(void)
 void lp_stby_boot_gate(void)
 {
     // WKUP1이 혹시 켜져 있었다면 우선 꺼서 부팅 초기 판정에 간섭 못 하게
+	HAL_Delay(1000);//눈 속임용으로 1초 누를 때 켜지게끔 함 (야매임 ㅇㅇ)
     ensure_wkup1_off_at_boot();
 
     // 콜드부팅이면 바로 통과
@@ -84,7 +85,7 @@ void lp_stby_boot_gate(void)
     clear_standby_flag();
 
     // RC 충전/노이즈 여유
-    HAL_Delay(30);
+    HAL_Delay(1000);//지금 여기 자체 안 들어옴
 
     // 1초 길게 누름을 *부팅 초기에* 요구
     // 디바운스 포함: 먼저 LP_STBY_DEBOUNCE_MS 동안 연속 눌림 확인 → 그 다음 1s 지속
@@ -260,7 +261,7 @@ void lp_stby_on_1ms(void)
                     s_press_ms++;
                 }
 
-                if (s_press_ms >= 1000)  // 1초 이상 눌림
+                if (s_press_ms >= LP_STBY_HOLD_MS)  // 1초 이상 눌림
                 {
                     s_state = HOLDING;
                 }

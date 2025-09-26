@@ -13,15 +13,15 @@
 
 // 디바운스/홀드 시간(ms)
 #ifndef LP_STBY_DEBOUNCE_MS
-#define LP_STBY_DEBOUNCE_MS  30
+#define LP_STBY_DEBOUNCE_MS  		30
 #endif
 
-#define LP_STBY_WAKE_HOLD_MS       1000   // 켤 때 필요한 길게-눌림 시간(1s)
+#define LP_STBY_WAKE_HOLD_MS       	300   // 켤 때 필요한 길게-눌림 시간(1s)
 
-#define LP_STBY_BOOT_RC_DELAY_MS   30     // RC 안정 대기
+#define LP_STBY_BOOT_RC_DELAY_MS   	30     // RC 안정 대기
 
 #ifndef LP_STBY_HOLD_MS
-#define LP_STBY_HOLD_MS      1000
+#define LP_STBY_HOLD_MS      		300
 #endif
 
 
