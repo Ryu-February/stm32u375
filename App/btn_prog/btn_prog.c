@@ -25,6 +25,7 @@ static uint8_t          s_idx;            // 현재 실행 인덱스
 static btn_prog_state_t s_state;
 
 static uint32_t         s_t_arm;          // ARMED 시작 시각(ms)
+static uint32_t         s_t_gap;          // ★ GAP 시작 시각(ms)
 static StepOperation    s_cur_op;         // 마지막으로 보낸 모터 명령(래치)
 
 // ===== 유틸 =====
@@ -196,33 +197,51 @@ void btn_prog_service(mode_sw_t cur_mode, bool calib_active)
 
         case BTN_PROG_RUNNING:
         {
-            // 현재 진행 스텝 수 체크 (부호 무시하고 절대값으로 비교)
-            int32_t executed = get_executed_steps();     // ★ stepper.c 공개 API
+            int32_t executed = get_executed_steps();
             uint32_t abs_exec = (executed < 0) ? (uint32_t)(-executed) : (uint32_t)executed;
 
             if (abs_exec >= s_buf[s_idx].target_steps)
             {
-                // 다음 아이템으로
-                s_idx++;
-                if (s_idx >= s_len)
+                // 이번 아이템 완료 → 마지막이 아니면 GAP으로, 마지막이면 종료
+                if ((s_idx + 1) >= s_len)
                 {
-                    // 끝 → 정지(버퍼 보존)
+                    // 마지막 아이템 완료 → 종료
                     s_state = BTN_PROG_IDLE;
                     drive_if_changed(OP_STOP);
                     uart_printf("[SEQ] done. buffer kept (len=%u)\r\n", s_len);
                 }
                 else
                 {
-                    // 다음 아이템 시작
-                    odometry_steps_init();                // ★ 새 구간 0으로
-                    drive_if_changed(s_buf[s_idx].op);
-                    uart_printf("[SEQ] idx=%u/%u op=%d target=%lu\r\n",
-                                s_idx + 1, s_len, (int)s_buf[s_idx].op,
-                                (unsigned long)s_buf[s_idx].target_steps);
-
-                    // (필요하면 여기 사이에 아주 짧은 브레이크 삽입 가능)
-                    // step_stop(); delay_ms(10); drive_if_changed(...);
+                    // 다음 아이템을 위해 1초 간격
+                    s_idx++;                         // 다음 아이템 인덱스 미리 증가
+                    s_state = BTN_PROG_GAP;
+                    s_t_gap = ms_now();
+                    drive_if_changed(OP_STOP);       // ★ 간격 동안 모터 정지(HOLD는 유지)
+                    uart_printf("[SEQ] gap %ums before idx=%u/%u\r\n",
+                                BTN_PROG_INTER_GAP_MS, s_idx + 1, s_len);
                 }
+            }
+            break;
+        }
+
+        case BTN_PROG_GAP:
+        {
+            // 아이템 간 1초 정지 대기
+            if ((ms_now() - s_t_gap) >= BTN_PROG_INTER_GAP_MS)
+            {
+                // 다음 아이템 시작
+                odometry_steps_init();
+                drive_if_changed(s_buf[s_idx].op);
+                uart_printf("[SEQ] idx=%u/%u op=%d target=%lu\r\n",
+                            s_idx + 1, s_len, (int)s_buf[s_idx].op,
+                            (unsigned long)s_buf[s_idx].target_steps);
+
+                s_state = BTN_PROG_RUNNING;
+            }
+            else
+            {
+                // 대기 중에는 계속 STOP 유지
+                drive_if_changed(OP_STOP);
             }
             break;
         }

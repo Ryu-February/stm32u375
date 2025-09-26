@@ -19,6 +19,8 @@
 // ===== 설정값 =====
 #define BTN_PROG_MAX_LEN             50
 #define BTN_PROG_ARM_DELAY_MS        1000   // GO 후 1초 대기
+#define BTN_PROG_INTER_GAP_MS        1000   // ★ 각 아이템 사이 간격(1s)
+
 
 // 각 동작의 목표 스텝 수
 #define BTN_PROG_STEPS_FORWARD       2000u
@@ -26,11 +28,13 @@
 #define BTN_PROG_STEPS_TURN_LEFT     1050u
 #define BTN_PROG_STEPS_TURN_RIGHT    1050u
 
+
 typedef enum
 {
     BTN_PROG_IDLE = 0,
     BTN_PROG_ARMED,
     BTN_PROG_RUNNING,
+	BTN_PROG_GAP,
     BTN_PROG_PAUSED
 } btn_prog_state_t;
 
