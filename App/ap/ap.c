@@ -71,6 +71,8 @@ void ap_main(void)
             cur_mode = mode_sw_get();          // 재확인
             apply_mode_button_mask(cur_mode, color_calib_is_active());
             uart_printf("[MODE] %s\r\n", mode_sw_name(cur_mode));
+            // ★ 여기서만 한 번
+			card_prog_set_mode(cur_mode);
         }
 
         // --- 캘리 상태 변화 처리 ---
@@ -101,12 +103,12 @@ void ap_main(void)
         }
 
         // --- 카드 모드에 센서 피드 (양쪽 동일일 때만 큐잉) ---
-		card_prog_set_mode(cur_mode);   // 모드 알려주기(내부에서 비활성 처리)
 		if (cur_mode == MODE_CARD && !now_calib_active)
 		{
 			uint8_t left  = classify_color_side(BH1749_ADDR_LEFT);
 			uint8_t right = classify_color_side(BH1749_ADDR_RIGHT);
 			card_prog_on_dual_equal(left, right);   // 동일 색만 enqueue/반복 처리
+//			card_prog_service();
 		}
 
         btn_id_t pressed;
@@ -154,25 +156,35 @@ void ap_main(void)
 							break;
 					}
 				}
+				else if (cur_mode == MODE_CARD)
+				{
+					// ★ 카드 큐: 실행 제어만 버튼으로 받는다
+					switch (pressed)
+					{
+						case BTN_GO:
+						case BTN_RESUME:
+						case BTN_DELETE:
+							card_prog_on_button(pressed);
+							break;
+						default:
+							// 카드 큐의 전/후/좌/우 입력은 "센서"로만 받음
+							break;
+					}
+				}
 
 			}
 		}
 
-		if (color_calib_is_active() || cur_mode != MODE_BUTTON)
-		{
-		    // 버튼 모드가 아니거나 캘리 중이면 내부에서 STOP+PAUSE 처리됨
-		    btn_prog_service(cur_mode, true);
-		}
-		else
+		if (!color_calib_is_active() && cur_mode == MODE_BUTTON)
 		{
 		    btn_prog_service(cur_mode, false);
 		}
 
-		if(!color_calib_is_active() || cur_mode == MODE_CARD)
+		if (!color_calib_is_active() && cur_mode == MODE_CARD)
 		{
+			// 버튼 모드가 아니거나 캘리 중이면 내부에서 STOP+PAUSE 처리됨
 			card_prog_service();
 		}
-
 
 		app_rgb_actions_notify_press(pressed);
 		app_rgb_actions_poll();
