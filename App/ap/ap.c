@@ -33,6 +33,7 @@ void ap_init(void)
 	lp_stby_init();
 	mode_sw_init();
 	btn_init();
+	btn_prog_init();
 	btn_action_init();
 
 	step_init_all();
@@ -60,8 +61,6 @@ void ap_main(void)
 
 	while(1)
 	{
-		StepOperation op_req = s_current_op;
-
         mode_sw_t m;
         if (mode_sw_changed(&m) || cur_mode == MODE_INVALID)
         {
@@ -129,13 +128,13 @@ void ap_main(void)
 						case BTN_BACKWARD:
 						case BTN_LEFT:
 						case BTN_RIGHT:
-							btn_action_plan(pressed);  // ★ 딱 1회 실행
+							btn_prog_on_button(pressed);  // ★ 딱 1회 실행
 							break;
 
 						case BTN_GO:
 						case BTN_DELETE:
 						case BTN_RESUME:
-							btn_action_stop();         // 단발 모드에선 STOP로 처리
+							btn_prog_on_button(pressed);         // 단발 모드에선 STOP로 처리
 							break;
 
 						default:
@@ -146,16 +145,16 @@ void ap_main(void)
 			}
 		}
 
-		// --- 실행 진행 ---
-		if (now_calib_active || cur_mode != MODE_BUTTON)
+		if (color_calib_is_active() || cur_mode != MODE_BUTTON)
 		{
-			if (btn_action_is_running())
-				btn_action_stop();
+		    // 버튼 모드가 아니거나 캘리 중이면 내부에서 STOP+PAUSE 처리됨
+		    btn_prog_service(cur_mode, true);
 		}
 		else
 		{
-			btn_action_service();
+		    btn_prog_service(cur_mode, false);
 		}
+
 		app_rgb_actions_notify_press(pressed);
 		app_rgb_actions_poll();
 		// 캘리브레이션 활성 시엔 무조건 STOP 유지

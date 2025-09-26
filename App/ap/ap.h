@@ -22,6 +22,7 @@
 #include "calib.h"
 #include "flash.h"
 #include "mode_sw.h"
+#include "btn_prog.h"
 #include "btn_action.h"
 #include "rgb_actions.h"
 
