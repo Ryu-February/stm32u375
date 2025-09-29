@@ -7,6 +7,7 @@
 
 #include "card_prog.h"
 #include "uart.h"
+#include "rgb_actions.h"
 
 
 // ====== 내부 타입/상태 ======
@@ -222,6 +223,7 @@ void card_prog_on_dual_equal(uint8_t left, uint8_t right)
     s_last_eq_color = c;
 
     color_t col = (color_t)c;
+    app_rgb_actions_notify_card_color(col);   // <-- rgb 색깔 전달
 
     // 반복 카드: PINK(+1), PURPLE(+2), LIGHT_GREEN(+3)
     uint8_t rep = 0;

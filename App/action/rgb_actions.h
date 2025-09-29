@@ -21,6 +21,7 @@ void app_rgb_actions_on_button_event(btn_id_t btn_id, bool pressed);
 
 // 메인 루프에서 호출: 이벤트가 있으면 색 적용 + UART 로그 1줄
 void app_rgb_actions_notify_press(btn_id_t btn_id);
-void app_rgb_actions_poll(void);
+void app_rgb_actions_notify_card_color(color_t color);   // <-- ADD
+void app_rgb_actions_poll(uint8_t mod);
 
 #endif /* ACTION_RGB_ACTIONS_H_ */

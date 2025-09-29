@@ -187,7 +187,7 @@ void ap_main(void)
 		}
 
 		app_rgb_actions_notify_press(pressed);
-		app_rgb_actions_poll();
+		app_rgb_actions_poll(cur_mode);
 		// 캘리브레이션 활성 시엔 무조건 STOP 유지
 //		if (color_calib_is_active())
 //			op_req = OP_STOP;

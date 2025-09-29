@@ -7,6 +7,7 @@
 
 
 #include "rgb_actions.h"
+#include "mode_sw.h"
 
 
 static color_t color_by_button(btn_id_t id)
@@ -29,12 +30,17 @@ static color_t color_by_button(btn_id_t id)
 // enum 저장은 보통 원자적이지만, 안전하게 volatile.
 static volatile int      s_evt_pending = 0;
 static volatile btn_id_t s_evt_btn     = BTN_COUNT;
+// ---- ★ 카드 색상 이벤트(싱글 슬롯) 추가 ----
+static volatile int      s_evt_color_pending = 0;     // <-- ADD
+static volatile color_t  s_evt_color          = COLOR_BLACK; // <-- ADD
 
 void app_rgb_actions_init(void)
 {
     rgb_set_color(RGB_ZONE_V_SHAPE, COLOR_BLACK);
-    s_evt_pending = 0;
-    s_evt_btn     = BTN_COUNT;
+    s_evt_pending		 = 0;
+    s_evt_btn    		 = BTN_COUNT;
+    s_evt_color_pending  = 0;              // <-- ADD
+    s_evt_color          = COLOR_BLACK;    // <-- ADD
 }
 
 void app_rgb_actions_notify_press(btn_id_t btn_id)
@@ -48,25 +54,56 @@ void app_rgb_actions_notify_press(btn_id_t btn_id)
     s_evt_pending = 1;
 }
 
-
-void app_rgb_actions_poll(void)
+// ---- ★ 카드 색상 이벤트 통지 API ----
+void app_rgb_actions_notify_card_color(color_t color)     // <-- ADD
 {
-    if (!s_evt_pending)
-    {
-        return;
-    }
+    s_evt_color         = color;
+    s_evt_color_pending = 1;
+}
 
-    // 로컬로 스냅샷 떠서 경합 최소화
-    btn_id_t btn = s_evt_btn;
-    s_evt_pending = 0;
+
+
+void app_rgb_actions_poll(uint8_t mod)
+{
+   // ---- ★ 카드 색상 이벤트가 있으면 우선 처리 ----
+	if (s_evt_color_pending)                               // <-- ADD
+	{
+		color_t col = s_evt_color;
+		s_evt_color_pending = 0;
+
+		rgb_set_color(RGB_ZONE_EYES,    col);
+		rgb_set_color(RGB_ZONE_V_SHAPE, col);
+
+#if APP_RGB_ACTIONS_ENABLE_LOG
+		uart_printf("[RGB] CARD color=%d\r\n", (int)col);
+#endif
+		return; // ★ 카드 이벤트를 소비했으면 여기서 종료
+	}
+
+	// ---- 버튼 이벤트 처리(기존 로직) ----
+	if (!s_evt_pending)
+	{
+		return;
+	}
+
+	btn_id_t btn = s_evt_btn;
+	s_evt_pending = 0;
 
 #if !APP_RGB_ACTIONS_ISR_APPLY
-    // 색 적용은 메인 루프에서 수행 → ISR 부하 최소화
-    rgb_set_color(RGB_ZONE_EYES, color_by_button(btn));
-    rgb_set_color(RGB_ZONE_V_SHAPE, color_by_button(btn));
+	if (mod == MODE_LINE_TRACING)
+	{
+		rgb_set_color(RGB_ZONE_EYES,    COLOR_WHITE);
+		rgb_set_color(RGB_ZONE_V_SHAPE, COLOR_WHITE);
+	}
+	else if (mod == MODE_BUTTON)
+	{
+		color_t c = color_by_button(btn);
+		rgb_set_color(RGB_ZONE_EYES,    c);
+		rgb_set_color(RGB_ZONE_V_SHAPE, c);
+	}
 #endif
 
 #if APP_RGB_ACTIONS_ENABLE_LOG
-    uart_printf("[RGB] V-SHAPE <- btn=%d\r\n", (int)btn);
+	uart_printf("[RGB] V-SHAPE <- btn=%d\r\n", (int)btn);
 #endif
 }
