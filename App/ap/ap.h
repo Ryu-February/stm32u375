@@ -27,6 +27,8 @@
 #include "card_prog.h"
 #include "card_action.h"
 #include "rgb_actions.h"
+#include "lt_prog.h"
+#include "line_tracing.h"
 
 
 #include "lp_stby.h"

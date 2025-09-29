@@ -21,7 +21,7 @@ typedef struct
 
 static const btn_ch_cfg_t btn_cfg[BTN_COUNT] =
 {
-		[BTN_GO]		= { GPIOB, GPIO_PIN_0  },
+		[BTN_EXECUTE]	= { GPIOB, GPIO_PIN_0  },
 		[BTN_DELETE]   	= { GPIOB, GPIO_PIN_1  },
 		[BTN_RESUME]   	= { GPIOB, GPIO_PIN_2  },
 		[BTN_FORWARD]  	= { GPIOB, GPIO_PIN_12 },
@@ -195,7 +195,7 @@ static const char *btn_name(btn_id_t id)
 {
     switch (id)
     {
-        case BTN_GO:        return "GO";
+        case BTN_EXECUTE:        return "GO";
         case BTN_DELETE:    return "DELETE";
         case BTN_RESUME:    return "RESUME";
         case BTN_FORWARD:   return "FORWARD";
@@ -210,7 +210,7 @@ void btn_print_states(void)
 {
     // 각 버튼의 안정화된 현재 상태(1=pressed, 0=released)
     uart_printf("[BTN] GO:%d DEL:%d RES:%d F:%d B:%d L:%d R:%d\r\n",
-                btn_is_pressed(BTN_GO),
+                btn_is_pressed(BTN_EXECUTE),
                 btn_is_pressed(BTN_DELETE),
                 btn_is_pressed(BTN_RESUME),
                 btn_is_pressed(BTN_FORWARD),

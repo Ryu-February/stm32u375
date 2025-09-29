@@ -79,12 +79,6 @@ void line_tracing_set_gains(float kp, float ki, float kd)
     g_cfg.Kd = kd;
 }
 
-static inline uint32_t brightness(uint16_t r, uint16_t g, uint16_t b)
-{
-    // 프로젝트의 calculate_brightness()가 따로 있으면 그걸 사용해도 됩니다.
-    return (uint32_t)r + g + b;
-}
-
 void line_tracing_update(uint32_t now_ms)
 {
     if (!g_enabled)

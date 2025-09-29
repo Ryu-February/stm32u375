@@ -16,6 +16,14 @@ extern TIM_HandleTypeDef htim6;
 
 static void apply_mode_button_mask(mode_sw_t m, bool calib_active);
 
+const lt_config_t lt =
+{
+	.Kp = 30.f, .Ki = 0.f, .Kd = 15.f,
+	.base_ticks = 1500, .min_ticks = 500, .max_ticks = 2500,
+	.interval_ms = 5
+};
+
+
 
 void ap_init(void)
 {
@@ -38,6 +46,8 @@ void ap_init(void)
 	card_prog_init();
 	card_action_init();
 
+	line_tracing_init(&lt);
+	line_tracing_enable(false);
 
 	step_init_all();
     // [PATCH] 부팅 직후 확실히 정지 1회
@@ -146,7 +156,7 @@ void ap_main(void)
 							btn_prog_on_button(pressed);  // ★ 딱 1회 실행
 							break;
 
-						case BTN_GO:
+						case BTN_EXECUTE:
 						case BTN_DELETE:
 						case BTN_RESUME:
 							btn_prog_on_button(pressed);         // 단발 모드에선 STOP로 처리
@@ -161,10 +171,24 @@ void ap_main(void)
 					// ★ 카드 큐: 실행 제어만 버튼으로 받는다
 					switch (pressed)
 					{
-						case BTN_GO:
+						case BTN_EXECUTE:
 						case BTN_RESUME:
 						case BTN_DELETE:
 							card_prog_on_button(pressed);
+							break;
+						default:
+							// 카드 큐의 전/후/좌/우 입력은 "센서"로만 받음
+							break;
+					}
+				}
+				else if (cur_mode == MODE_LINE_TRACING)
+				{
+					switch (pressed)
+					{
+						case BTN_EXECUTE:
+						case BTN_RESUME:
+						case BTN_DELETE:
+							lt_prog_on_button(pressed);
 							break;
 						default:
 							// 카드 큐의 전/후/좌/우 입력은 "센서"로만 받음

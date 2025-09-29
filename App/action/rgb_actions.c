@@ -18,7 +18,7 @@ static color_t color_by_button(btn_id_t id)
         case BTN_BACKWARD: return COLOR_RED;     // 후진 = 빨강
         case BTN_LEFT:     return COLOR_BLUE;    // 좌회전 = 파랑
         case BTN_RIGHT:    return COLOR_YELLOW;  // 우회전 = 노랑
-        case BTN_GO:       return COLOR_WHITE;   // GO = 하양
+        case BTN_EXECUTE:  return COLOR_WHITE;   // GO = 하양
         case BTN_DELETE:   return COLOR_PINK;    // DELETE = 핑크
         case BTN_RESUME:   return COLOR_PURPLE;  // RESUME = 보라
         default:           return COLOR_BLACK;
@@ -92,8 +92,8 @@ void app_rgb_actions_poll(uint8_t mod)
 #if !APP_RGB_ACTIONS_ISR_APPLY
 	if (mod == MODE_LINE_TRACING)
 	{
-		rgb_set_color(RGB_ZONE_EYES,    COLOR_WHITE);
-		rgb_set_color(RGB_ZONE_V_SHAPE, COLOR_WHITE);
+		rgb_set_color(RGB_ZONE_EYES,    COLOR_YELLOW);
+		rgb_set_color(RGB_ZONE_V_SHAPE, COLOR_YELLOW);
 	}
 	else if (mod == MODE_BUTTON)
 	{

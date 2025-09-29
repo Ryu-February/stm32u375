@@ -16,15 +16,15 @@
 
 // ---- 모드별 버튼 마스크 ----
 #define BTN_BIT(id)           (1u << (id))
-#define BTN_MASK_ALL   ( BTN_BIT(BTN_GO) | BTN_BIT(BTN_DELETE) | BTN_BIT(BTN_RESUME) | \
+#define BTN_MASK_ALL   ( BTN_BIT(BTN_EXECUTE) | BTN_BIT(BTN_DELETE) | BTN_BIT(BTN_RESUME) | \
                          BTN_BIT(BTN_FORWARD) | BTN_BIT(BTN_BACKWARD) | \
                          BTN_BIT(BTN_LEFT) | BTN_BIT(BTN_RIGHT) )
-#define BTN_MASK_BASE3 ( BTN_BIT(BTN_GO) | BTN_BIT(BTN_DELETE) | BTN_BIT(BTN_RESUME) )
+#define BTN_MASK_BASE3 ( BTN_BIT(BTN_EXECUTE) | BTN_BIT(BTN_DELETE) | BTN_BIT(BTN_RESUME) )
 #define BTN_MASK_LINE  ( BTN_MASK_BASE3 | BTN_BIT(BTN_FORWARD) )   // ★ 라인트레이싱에서 전진 추가
 
 typedef enum
 {
-	BTN_GO = 0,
+	BTN_EXECUTE = 0,
 	BTN_DELETE,
 	BTN_RESUME,
 	BTN_FORWARD,

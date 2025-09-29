@@ -120,7 +120,7 @@ void btn_prog_on_button(btn_id_t id)
         }
 
         // ---- 실행/정지/삭제 ----
-        case BTN_GO:
+        case BTN_EXECUTE:
         {
             if (s_len == 0)
             {

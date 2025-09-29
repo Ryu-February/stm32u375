@@ -199,7 +199,7 @@ void card_prog_on_button(btn_id_t id)
 
     switch (id)
     {
-        case BTN_GO:      card_prog_start(); break;
+        case BTN_EXECUTE: card_prog_start(); break;
         case BTN_RESUME:  card_prog_stop();  break;
         case BTN_DELETE:  card_prog_clear(); break;
         default:          break;

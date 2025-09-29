@@ -46,14 +46,13 @@
 // ---- External timers (provide from your BSP) ----
 // TIM_PWM_CNT: ARR must be 255; we only read CNT (0..255) for software PWM compare
 // TIM_TICK : free‑running tick for step period (e.g., 1us per tick)
-extern TIM_HandleTypeDef htim2; // use as PWM CNT (ARR=255)
 //extern TIM_HandleTypeDef htim16; // use as tick source (1us CNT)
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim3;
 
 
 
-#define TIM_PWM_CNT ((uint32_t)(TIM2->CNT))
+#define TIM_PWM_CNT ((uint32_t)(TIM2->CNT)) // use as PWM CNT (ARR=255)
 #define TIM_TICK_CNT (read_tick32())
 
 static inline uint32_t read_tick32(void){ return TIM2->CNT; }
