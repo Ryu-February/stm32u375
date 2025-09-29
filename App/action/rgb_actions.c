@@ -8,6 +8,7 @@
 
 #include "rgb_actions.h"
 #include "mode_sw.h"
+#include "card_prog.h"
 
 
 static color_t color_by_button(btn_id_t id)
@@ -37,6 +38,7 @@ static volatile color_t  s_evt_color          = COLOR_BLACK; // <-- ADD
 void app_rgb_actions_init(void)
 {
     rgb_set_color(RGB_ZONE_V_SHAPE, COLOR_BLACK);
+    rgb_set_color(RGB_ZONE_EYES, COLOR_BLACK);
     s_evt_pending		 = 0;
     s_evt_btn    		 = BTN_COUNT;
     s_evt_color_pending  = 0;              // <-- ADD
@@ -65,7 +67,10 @@ void app_rgb_actions_notify_card_color(color_t color)     // <-- ADD
 
 void app_rgb_actions_poll(uint8_t mod)
 {
-   // ---- ★ 카드 색상 이벤트가 있으면 우선 처리 ----
+   // ----- * 카드 프로그래밍 동작 중엔 색상 입력 안 받게 처리
+	if(card_prog_get_state() == CARD_PROG_RUNNING)
+		return;
+	// ---- ★ 카드 색상 이벤트가 있으면 우선 처리 ----
 	if (s_evt_color_pending)                               // <-- ADD
 	{
 		color_t col = s_evt_color;

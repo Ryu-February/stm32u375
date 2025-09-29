@@ -140,6 +140,7 @@ static inline uint32_t diff_u32(uint32_t a, uint32_t b)
 	return (uint32_t)(a - b);
 }
 
+#if (_PWM_IMPL == PWM_IMPL_SOFT)
 
 static inline void gpio_pwm4(
 	GPIO_TypeDef* p1, uint16_t b1,
@@ -158,9 +159,7 @@ static inline void gpio_pwm4(
 	p3->BSRR = set3 | rst3;//B+
 	p4->BSRR = set4 | rst4;//B-
 }
-
-
-#if (_PWM_IMPL == PWM_IMPL_HARD)
+#elif (_PWM_IMPL == PWM_IMPL_HARD)
 
 static volatile uint8_t s_pwm_forced = 0; // 1: OCMODE_FORCED_* 상태
 

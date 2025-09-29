@@ -22,6 +22,9 @@ uint16_t offset_average;
 color_mode_t insert_queue[MAX_INSERTED_COMMANDS];
 uint8_t insert_index = 0;
 
+extern volatile uint8_t  offset_side_local;   // 0: RIGHT, 1: LEFT (프로젝트 정의에 맞게 사용)
+extern volatile uint16_t offset_avg_local;
+
 /* --------- Low-level BH1749 --------- */
 
 void bh1749_write_reg(uint8_t dev_addr, uint8_t reg, uint8_t data)
@@ -210,6 +213,9 @@ void debug_print_color_reference_table(void)
     uart_printf("=== BRIGHTNESS OFFSET TABLE ===\r\n");
     uart_printf("offset_black: %d | offset_white: %d\r\n", offset_black, offset_white);
     uart_printf("offset_aver: %d\r\n", offset_average);
+
+    offset_avg_local = offset_average;
+	offset_side_local = offset_side;
 }
 
 uint32_t calculate_brightness(uint16_t r, uint16_t g, uint16_t b)

@@ -60,9 +60,9 @@ void lt_prog_init(const lt_config_t *cfg)
     else
     {
         // 합리적 기본값
-        s_cfg.Kp          = 0.5f;
-        s_cfg.Ki          = 0.0f;
-        s_cfg.Kd          = 0.2f;
+        s_cfg.Kp          = 30.f;
+        s_cfg.Ki          = 0.f;
+        s_cfg.Kd          = 15.f;
         s_cfg.base_ticks  = 1500;
         s_cfg.min_ticks   = 500;
         s_cfg.max_ticks   = 2500;
@@ -114,7 +114,6 @@ void lt_prog_on_button(btn_id_t id)
         case BTN_RESUME:
             lt_prog_on_action_resume();
             break;
-
         case BTN_DELETE:
             lt_prog_on_action_delete();
             break;

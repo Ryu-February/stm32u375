@@ -20,7 +20,7 @@
                          BTN_BIT(BTN_FORWARD) | BTN_BIT(BTN_BACKWARD) | \
                          BTN_BIT(BTN_LEFT) | BTN_BIT(BTN_RIGHT) )
 #define BTN_MASK_BASE3 ( BTN_BIT(BTN_EXECUTE) | BTN_BIT(BTN_DELETE) | BTN_BIT(BTN_RESUME) )
-#define BTN_MASK_LINE  ( BTN_MASK_BASE3 | BTN_BIT(BTN_FORWARD) )   // ★ 라인트레이싱에서 전진 추가
+#define BTN_MASK_LINE  ( BTN_MASK_BASE3 | BTN_BIT(BTN_FORWARD) )   // ★ 라인트레이싱에서 전진 추가(캘리브레이션용)
 
 typedef enum
 {

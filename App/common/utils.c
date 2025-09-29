@@ -9,7 +9,7 @@
 #include "utils.h"
 
 
-
+extern volatile uint32_t timer6_ms;
 
 
 void delay_ms(uint32_t ms)
@@ -20,4 +20,10 @@ void delay_ms(uint32_t ms)
 uint32_t millis(void)
 {
 	return HAL_GetTick();
+}
+
+
+uint32_t tim6_get_ms(void)
+{
+	return timer6_ms;
 }

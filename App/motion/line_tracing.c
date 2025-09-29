@@ -21,8 +21,8 @@ static float   prev_error = 0.0f;
 static float   integral   = 0.0f;
 static uint32_t prev_ms   = 0;
 
-static uint8_t  offset_side_local = 0;   // 0: RIGHT, 1: LEFT (프로젝트 정의에 맞게 사용)
-static uint16_t offset_avg_local  = 0;
+volatile uint8_t  offset_side_local = 0;   // 0: RIGHT, 1: LEFT (프로젝트 정의에 맞게 사용)
+volatile uint16_t offset_avg_local  = 0;
 
 
 extern uint8_t  offset_side;
@@ -106,14 +106,14 @@ void line_tracing_update(uint32_t now_ms)
     uint32_t rb = calculate_brightness(R.red, R.green, R.blue);
 
     // 오프셋 보정(측정 환경 따라 한쪽만 기준치 빼기)
-    if (offset_side_local)   // LEFT 기준
+    if (offset_side_local/* == LEFT*/)   // LEFT 기준
     {
         if (lb > offset_avg_local)
         {
             lb -= offset_avg_local;
         }
     }
-    else                     // RIGHT 기준
+    else                   			 // RIGHT 기준
     {
         if (rb > offset_avg_local)
         {
@@ -131,8 +131,6 @@ void line_tracing_update(uint32_t now_ms)
     // ── 속도(=period ticks) 계산 ───────────────────────────────────────
     uint32_t left_ticks  = (float)g_cfg.base_ticks + output;
     uint32_t right_ticks = (float)g_cfg.base_ticks - output;
-
-
 
     // 데드존 완화
     if (abs((int)output) < 200)

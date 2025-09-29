@@ -16,12 +16,6 @@ extern TIM_HandleTypeDef htim6;
 
 static void apply_mode_button_mask(mode_sw_t m, bool calib_active);
 
-const lt_config_t lt =
-{
-	.Kp = 30.f, .Ki = 0.f, .Kd = 15.f,
-	.base_ticks = 1500, .min_ticks = 500, .max_ticks = 2500,
-	.interval_ms = 5
-};
 
 
 
@@ -46,7 +40,7 @@ void ap_init(void)
 	card_prog_init();
 	card_action_init();
 
-	line_tracing_init(&lt);
+	lt_prog_init(NULL);
 	line_tracing_enable(false);
 
 	step_init_all();
@@ -208,6 +202,12 @@ void ap_main(void)
 		{
 			// 버튼 모드가 아니거나 캘리 중이면 내부에서 STOP+PAUSE 처리됨
 			card_prog_service();
+		}
+
+		if (!color_calib_is_active() && cur_mode == MODE_LINE_TRACING)
+		{
+			// 버튼 모드가 아니거나 캘리 중이면 내부에서 STOP+PAUSE 처리됨
+			lt_prog_service(tim6_get_ms());
 		}
 
 		app_rgb_actions_notify_press(pressed);
