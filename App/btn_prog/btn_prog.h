@@ -25,8 +25,8 @@
 // 각 동작의 목표 스텝 수
 #define BTN_PROG_STEPS_FORWARD       2000u
 #define BTN_PROG_STEPS_BACKWARD      2000u
-#define BTN_PROG_STEPS_TURN_LEFT     1300u
-#define BTN_PROG_STEPS_TURN_RIGHT    1300u
+#define BTN_PROG_STEPS_TURN_LEFT     1150u
+#define BTN_PROG_STEPS_TURN_RIGHT    1150u
 
 
 typedef enum
