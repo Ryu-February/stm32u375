@@ -111,7 +111,10 @@ void ap_main(void)
 		{
 			uint8_t left  = classify_color_side(BH1749_ADDR_LEFT);
 			uint8_t right = classify_color_side(BH1749_ADDR_RIGHT);
-			card_prog_on_dual_equal(left, right);   // 동일 색만 enqueue/반복 처리
+			if(btn_pop_long_press(BTN_FORWARD, 200))
+			{
+				card_prog_on_dual_equal(left, right);   // 동일 색만 enqueue/반복 처리
+			}
 //			card_prog_service();
 		}
 
@@ -122,7 +125,6 @@ void ap_main(void)
 			// 캘리브레이션 진행 중
 			if (color_calib_is_active())
 			{
-
 				// FORWARD 딸깍 → 한 단계 진행
 				if (pressed == BTN_FORWARD)
 				{
@@ -209,27 +211,13 @@ void ap_main(void)
 			// 버튼 모드가 아니거나 캘리 중이면 내부에서 STOP+PAUSE 처리됨
 			lt_prog_service(tim6_get_ms());
 		}
+		else
+		{
+			step_set_period_ticks(500, 500);//라인 트레이싱 끝나고 속도 원상 복귀
+		}
 
 		app_rgb_actions_notify_press(pressed);
 		app_rgb_actions_poll(cur_mode);
-		// 캘리브레이션 활성 시엔 무조건 STOP 유지
-//		if (color_calib_is_active())
-//			op_req = OP_STOP;
-//
-//		if(cur_mode != MODE_BUTTON)
-//			op_req = OP_STOP;
-//		// [PATCH] 변경이 있을 때만 모터에 명령
-//		if (op_req != s_current_op)
-//		{
-//			step_drive(op_req);
-//			s_current_op = op_req;
-//		}
-
-//		uint8_t left  = classify_color_side(BH1749_ADDR_LEFT);
-//		uint8_t right = classify_color_side(BH1749_ADDR_RIGHT);
-//
-//		uart_printf("[LEFT: %s] | [RIGHT: %s]\r\n", color_to_string(left), color_to_string(right));
-//		delay_ms(120);
 	}
 }
 
@@ -255,7 +243,7 @@ static void apply_mode_button_mask(mode_sw_t m, bool calib_active)
 
 		case MODE_CARD:
 		default:
-			btn_enable_mask_set(BTN_MASK_BASE3);
+			btn_enable_mask_set(BTN_MASK_CARD);		//임시방편으로 card도 forward 버튼 입력해야 되게끔 설정
 			break;
 	}
 }

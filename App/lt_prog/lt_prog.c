@@ -60,9 +60,9 @@ void lt_prog_init(const lt_config_t *cfg)
     else
     {
         // 합리적 기본값
-        s_cfg.Kp          = 30.f;
+        s_cfg.Kp          = 3.f;
         s_cfg.Ki          = 0.f;
-        s_cfg.Kd          = 15.f;
+        s_cfg.Kd          = 3.f;
         s_cfg.base_ticks  = 1500;
         s_cfg.min_ticks   = 500;
         s_cfg.max_ticks   = 2500;

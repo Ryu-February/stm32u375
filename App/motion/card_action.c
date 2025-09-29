@@ -15,8 +15,8 @@
 // === 동작 스텝수 (튜닝 가능) ===
 #define CARD_STEPS_FORWARD     2000u
 #define CARD_STEPS_BACKWARD    2000u
-#define CARD_STEPS_LEFT        1050u
-#define CARD_STEPS_RIGHT       1050u
+#define CARD_STEPS_LEFT        1100u
+#define CARD_STEPS_RIGHT       1100u
 
 typedef struct
 {

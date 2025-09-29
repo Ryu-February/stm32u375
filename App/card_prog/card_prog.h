@@ -22,8 +22,8 @@
 // 스텝 수 매핑
 #define CARD_PROG_STEPS_FORWARD       2000u
 #define CARD_PROG_STEPS_BACKWARD      2000u
-#define CARD_PROG_STEPS_TURN_LEFT     1050u
-#define CARD_PROG_STEPS_TURN_RIGHT    1050u
+#define CARD_PROG_STEPS_TURN_LEFT     1150u
+#define CARD_PROG_STEPS_TURN_RIGHT    1150u
 
 typedef enum
 {

@@ -67,6 +67,24 @@ void app_rgb_actions_notify_card_color(color_t color)     // <-- ADD
 
 void app_rgb_actions_poll(uint8_t mod)
 {
+#if !APP_RGB_ACTIONS_ISR_APPLY
+	// ---- 버튼 이벤트 처리(기존 로직) ----
+	if (!s_evt_pending)
+	{
+		return;
+	}
+
+	btn_id_t btn = s_evt_btn;
+	s_evt_pending = 0;
+
+	if (mod == MODE_LINE_TRACING || mod == MODE_BUTTON)
+	{
+		color_t c = color_by_button(btn);
+		rgb_set_color(RGB_ZONE_EYES,    c);
+		rgb_set_color(RGB_ZONE_V_SHAPE, c);
+	}
+#endif
+
    // ----- * 카드 프로그래밍 동작 중엔 색상 입력 안 받게 처리
 	if(card_prog_get_state() == CARD_PROG_RUNNING)
 		return;
@@ -84,30 +102,6 @@ void app_rgb_actions_poll(uint8_t mod)
 #endif
 		return; // ★ 카드 이벤트를 소비했으면 여기서 종료
 	}
-
-	// ---- 버튼 이벤트 처리(기존 로직) ----
-	if (!s_evt_pending)
-	{
-		return;
-	}
-
-	btn_id_t btn = s_evt_btn;
-	s_evt_pending = 0;
-
-#if !APP_RGB_ACTIONS_ISR_APPLY
-	if (mod == MODE_LINE_TRACING)
-	{
-		rgb_set_color(RGB_ZONE_EYES,    COLOR_YELLOW);
-		rgb_set_color(RGB_ZONE_V_SHAPE, COLOR_YELLOW);
-	}
-	else if (mod == MODE_BUTTON)
-	{
-		color_t c = color_by_button(btn);
-		rgb_set_color(RGB_ZONE_EYES,    c);
-		rgb_set_color(RGB_ZONE_V_SHAPE, c);
-	}
-#endif
-
 #if APP_RGB_ACTIONS_ENABLE_LOG
 	uart_printf("[RGB] V-SHAPE <- btn=%d\r\n", (int)btn);
 #endif

@@ -106,7 +106,7 @@ void line_tracing_update(uint32_t now_ms)
     uint32_t rb = calculate_brightness(R.red, R.green, R.blue);
 
     // 오프셋 보정(측정 환경 따라 한쪽만 기준치 빼기)
-    if (offset_side_local/* == LEFT*/)   // LEFT 기준
+    if (offset_side_local == LEFT)   // LEFT 기준
     {
         if (lb > offset_avg_local)
         {
@@ -122,7 +122,7 @@ void line_tracing_update(uint32_t now_ms)
     }
 
     // ── PID ────────────────────────────────────────────────────────────
-    float error      = (float)rb - (float)lb;
+    float error      = (offset_side_local ==  LEFT) ? (float)lb - (float)rb : (float)rb - lb;
     // integral      += error * dt;  // dt가 필요하면 interval_ms 사용
     float derivative = error - prev_error;
     float output     = g_cfg.Kp * error + g_cfg.Ki * integral + g_cfg.Kd * derivative;
@@ -157,12 +157,7 @@ void line_tracing_update(uint32_t now_ms)
 
     step_drive_ratio((uint16_t)left_ticks, (uint16_t)right_ticks);
 
-	uart_printf("g_cfg_base_ticks: %d\r\n", g_cfg.base_ticks);
-	uart_printf("g_cfg_min_ticks: %d\r\n", g_cfg.min_ticks);
-	uart_printf("g_cfg_max_ticks: %d\r\n", g_cfg.max_ticks);
-	uart_printf("left_ticks: %d | right_ticks: %d\r\n", left_ticks, right_ticks);
-
     // (옵션) 디버깅
-    // uart_printf("[LT] lb:%lu rb:%lu err:%0.2f out:%0.2f L:%0.1f R:%0.1f\r\n",
-    //             (unsigned long)lb, (unsigned long)rb, error, output, left_ticks, right_ticks);
+     uart_printf("[LT] lb:%lu rb:%lu err:%0.2f out:%0.2f L:%0.1f R:%0.1f\r\n",
+                 (unsigned long)lb, (unsigned long)rb, error, output, left_ticks, right_ticks);
 }

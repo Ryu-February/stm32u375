@@ -216,8 +216,8 @@ void card_prog_on_dual_equal(uint8_t left, uint8_t right)
     uint8_t c = left;
 
     // ★ 같은 동일색이 계속 유지되는 동안은 무시
-    if (c == s_last_eq_color)
-        return;
+//    if (c == s_last_eq_color)		//잠깐 없앰
+//        return;
 
     // ★ 여기서부터가 "새로운 동일색" 엣지
     s_last_eq_color = c;
@@ -229,7 +229,7 @@ void card_prog_on_dual_equal(uint8_t left, uint8_t right)
     uint8_t rep = 0;
     if (col == COLOR_PINK)             rep = 1;
     else if (col == COLOR_PURPLE)      rep = 2;
-    else if (col == COLOR_LIGHT_GREEN) rep = 3;
+    else if (col == COLOR_WHITE)	   rep = 3;
 
     if (rep > 0)
     {
