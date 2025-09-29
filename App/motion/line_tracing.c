@@ -105,6 +105,7 @@ void line_tracing_update(uint32_t now_ms)
     uint32_t lb = calculate_brightness(L.red, L.green, L.blue);
     uint32_t rb = calculate_brightness(R.red, R.green, R.blue);
 
+    /*
     // 오프셋 보정(측정 환경 따라 한쪽만 기준치 빼기)
     if (offset_side_local == LEFT)   // LEFT 기준
     {
@@ -119,24 +120,24 @@ void line_tracing_update(uint32_t now_ms)
         {
             rb -= offset_avg_local;
         }
-    }
+    }*/
 
     // ── PID ────────────────────────────────────────────────────────────
-    float error      = (offset_side_local ==  LEFT) ? (float)lb - (float)rb : (float)rb - lb;
+    float error      = (float)rb - (float)lb;
     // integral      += error * dt;  // dt가 필요하면 interval_ms 사용
     float derivative = error - prev_error;
     float output     = g_cfg.Kp * error + g_cfg.Ki * integral + g_cfg.Kd * derivative;
     prev_error       = error;
 
     // ── 속도(=period ticks) 계산 ───────────────────────────────────────
-    uint32_t left_ticks  = (float)g_cfg.base_ticks + output;
-    uint32_t right_ticks = (float)g_cfg.base_ticks - output;
+    uint32_t left_ticks  = (float)g_cfg.base_ticks - output;
+    uint32_t right_ticks = (float)g_cfg.base_ticks + output;
 
     // 데드존 완화
     if (abs((int)output) < 200)
     {
-        left_ticks  = (float)g_cfg.base_ticks;
-        right_ticks = (float)g_cfg.base_ticks;
+        left_ticks  = 800;
+        right_ticks = 800;
     }
 
     // 한계 클램프
