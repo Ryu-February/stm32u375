@@ -9,6 +9,7 @@
 #include "rgb_actions.h"
 #include "mode_sw.h"
 #include "card_prog.h"
+#include "btn_prog.h"
 
 
 static color_t color_by_button(btn_id_t id)
@@ -79,7 +80,12 @@ void app_rgb_actions_poll(uint8_t mod)
 
 	if (mod == MODE_LINE_TRACING || mod == MODE_BUTTON)
 	{
+		if(btn_prog_get_state() == (BTN_PROG_RUNNING | BTN_PROG_GAP | BTN_PROG_ARMED))
+			return;
+
 		color_t c = color_by_button(btn);
+		if(c == COLOR_WHITE)
+			return;
 		rgb_set_color(RGB_ZONE_EYES,    c);
 		rgb_set_color(RGB_ZONE_V_SHAPE, c);
 	}

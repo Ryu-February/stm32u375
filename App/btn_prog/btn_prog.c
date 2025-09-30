@@ -8,6 +8,7 @@
 
 #include "btn_prog.h"
 #include "uart.h"
+#include "rgb.h"
 
 // 단일 작성자 원칙: 이 모듈이 step_drive()를 직접 호출한다.
 // ap.c에서는 step_drive()를 다시 호출하지 말 것.
@@ -191,6 +192,8 @@ void btn_prog_service(mode_sw_t cur_mode, bool calib_active)
             else
             {
                 drive_if_changed(OP_STOP);
+                rgb_set_color(RGB_ZONE_EYES, COLOR_BLACK);
+				rgb_set_color(RGB_ZONE_V_SHAPE, COLOR_BLACK);
             }
             break;
         }
@@ -209,6 +212,8 @@ void btn_prog_service(mode_sw_t cur_mode, bool calib_active)
                     s_state = BTN_PROG_IDLE;
                     drive_if_changed(OP_STOP);
                     uart_printf("[SEQ] done. buffer kept (len=%u)\r\n", s_len);
+                    rgb_set_color(RGB_ZONE_EYES, COLOR_YELLOW);
+					rgb_set_color(RGB_ZONE_V_SHAPE, COLOR_YELLOW);
                 }
                 else
                 {
@@ -242,6 +247,16 @@ void btn_prog_service(mode_sw_t cur_mode, bool calib_active)
             {
                 // 대기 중에는 계속 STOP 유지
                 drive_if_changed(OP_STOP);
+                if((ms_now() - s_t_gap) <= 500)
+				{
+					rgb_set_color(RGB_ZONE_EYES, COLOR_WHITE);
+					rgb_set_color(RGB_ZONE_V_SHAPE, COLOR_WHITE);
+				}
+				else
+				{
+					rgb_set_color(RGB_ZONE_EYES, COLOR_BLACK);
+					rgb_set_color(RGB_ZONE_V_SHAPE, COLOR_BLACK);
+				}
             }
             break;
         }
