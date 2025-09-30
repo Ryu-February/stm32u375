@@ -67,5 +67,21 @@ static inline void buzzer_evt_execute(void)  // 0.5초 1회 @ 1kHz
     buzzer_tone_once(1000, 500, 50);
 }
 
+void buzzer_play_pororororong(void);
+void buzzer_play_shutdown_pororororong(void);
+void buzzer_play_resume(void);
+void buzzer_play_execute(void);
+
+// 짧고 날카로운 확인음
+void buzzer_play_birik(void);
+
+// 또르르 굴리는 트릴 + 롱 테일
+void buzzer_play_biriririring(void);
+void buzzer_play_no_index(void);
+
+void buzzer_play_input_up(void);
+void buzzer_play_input_down(void);
+void buzzer_play_input_left(void);
+void buzzer_play_input_right(void);
 
 #endif /* BUZZER_BUZZER_H_ */

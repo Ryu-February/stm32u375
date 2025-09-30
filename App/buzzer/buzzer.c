@@ -257,3 +257,130 @@ void buzzer_update_1ms(void)
         }
     }
 }
+
+void buzzer_play_pororororong(void)
+{
+    // 포르테: 짧게 위로 스텝업하면서 “또르르르” 느낌 + 긴 테일
+    // 각 스텝: on=60ms, off=20ms (마지막 스텝만 off=0)
+    // 전체 길이 ≈ 7*(60+20) + 300 = 860 ms
+    // 큐 사용: 8개 (7스텝 + 테일 1개) → BZ_QUEUE_LEN=8에 맞춤
+
+    (void)buzzer_tone_pattern( 900,  60, 20, 1, 50);  // poro-
+    (void)buzzer_tone_pattern(1050,  60, 20, 1, 50);
+    (void)buzzer_tone_pattern(1250,  60, 20, 1, 50);
+    (void)buzzer_tone_pattern(1450,  60, 20, 1, 50);
+    (void)buzzer_tone_pattern(1700,  60, 20, 1, 50);
+    (void)buzzer_tone_pattern(1950,  60, 20, 1, 50);
+    (void)buzzer_tone_pattern(2200,  60,  0, 1, 50);  // 마지막 또르르 끝
+
+    // 롱— (조금 낮춰서 1.1kHz로 300ms sustain)
+    (void)buzzer_tone_pattern(1100, 300,  0, 1, 50);
+}
+
+void buzzer_play_shutdown_pororororong(void)
+{
+    // 먼저 다른 소리(루프 포함) 전부 정리
+    buzzer_stop();
+
+    // 상승 버전과 동일한 길이/리듬을 그대로 뒤집음
+    // 각 스텝: on=60ms, off=20ms (마지막 스텝만 off=0)
+    // 총 큐 사용 8개(7스텝 + 테일 1개) → 기본 BZ_QUEUE_LEN=8에 맞춤
+
+    (void)buzzer_tone_pattern(2200,  60, 20, 1, 50);  // 롱의 시작을 높은 톤에서
+    (void)buzzer_tone_pattern(1950,  60, 20, 1, 50);
+    (void)buzzer_tone_pattern(1700,  60, 20, 1, 50);
+    (void)buzzer_tone_pattern(1450,  60, 20, 1, 50);
+    (void)buzzer_tone_pattern(1250,  60, 20, 1, 50);
+    (void)buzzer_tone_pattern(1050,  60, 20, 1, 50);
+    (void)buzzer_tone_pattern( 900,  60,  0, 1, 50);  // 또르르 마무리
+
+    // 마지막 “롱—”은 더 낮게 700Hz로 300ms 유지 (살짝 잔향 느낌)
+    (void)buzzer_tone_pattern( 700, 300,  0, 1, 45);
+}
+
+void buzzer_play_resume(void)
+{
+    // 딩-딩-딩↗ + 살짝 길게 끝: 총 ~520ms
+    // on/off는 짧고 경쾌, 주파수는 점점 상승
+    (void)buzzer_tone_pattern( 900,  80, 30, 1, 50);
+    (void)buzzer_tone_pattern(1200,  80, 30, 1, 50);
+    (void)buzzer_tone_pattern(1500, 100, 40, 1, 50);
+    (void)buzzer_tone_pattern(1800, 140,  0, 1, 50);  // 마무리 롱
+}
+
+void buzzer_play_execute(void)
+{
+    // 타-타-타아— : 0.07s, 0.07s, 0.30s (사이 40ms 갭)
+    // 총 ~520ms, 상승(0.9→1.2→1.6kHz), duty 55%
+    (void)buzzer_tone_pattern( 900,  70, 40, 1, 55);
+    (void)buzzer_tone_pattern(1200,  70, 40, 1, 55);
+    (void)buzzer_tone_pattern(1600, 300,  0, 1, 55);
+}
+
+
+void buzzer_play_birik(void)
+{
+    // “삐↗릭” : 짧게 올렸다가 살짝 내려오며 마무리 (~165 ms)
+    // 큐 사용 3칸
+    (void)buzzer_tone_pattern(1400, 40, 10, 1, 55);
+    (void)buzzer_tone_pattern(1900, 55,  0, 1, 55);
+    (void)buzzer_tone_pattern(1100, 70,  0, 1, 50);
+}
+
+void buzzer_play_biriririring(void)
+{
+    // 큐 여유가 부족하면 간단 버전으로 대체
+    if (buzzer_queue_free() < 7)
+    {
+        // 최소 보장: 1.4 kHz 250 ms
+        (void)buzzer_tone_once(1400, 250, 50);
+        return;
+    }
+
+    // “삐리리리링”: 빠른 트릴(주파수 교차) 6스텝 + 롱 테일
+    // 각 스텝: on=40ms, off=10ms, duty=50~55%
+    // 총 길이 ≈ 6*(40+10) + 300 = 600 ms
+    (void)buzzer_tone_pattern(1300, 40, 10, 1, 50);
+    (void)buzzer_tone_pattern(1600, 40, 10, 1, 55);
+    (void)buzzer_tone_pattern(1350, 40, 10, 1, 50);
+    (void)buzzer_tone_pattern(1650, 40, 10, 1, 55);
+    (void)buzzer_tone_pattern(1400, 40, 10, 1, 50);
+    (void)buzzer_tone_pattern(1700, 40,  0, 1, 55); // 트릴 끝
+
+    // 링— 테일
+    (void)buzzer_tone_pattern(1400, 300, 0, 1, 50);
+}
+
+void buzzer_play_no_index(void)
+{
+    // “뚝-뚝↓” : 하강 두음 → ‘없음/불가’ 직관적
+    // 800 Hz 120ms, 60ms 쉼 → 600 Hz 220ms
+    (void)buzzer_tone_pattern( 800, 120, 60, 1, 45);
+    (void)buzzer_tone_pattern( 600, 220,  0, 1, 45);
+}
+
+// ↑: 짧은 상승 두음 (상향 느낌)
+void buzzer_play_input_up(void)
+{
+    (void)buzzer_tone_pattern(1200, 40, 10, 1, 50);
+    (void)buzzer_tone_pattern(1500, 60,  0, 1, 50);
+}
+
+// ↓: 짧은 하강 두음 (하향 느낌)
+void buzzer_play_input_down(void)
+{
+    (void)buzzer_tone_pattern(1500, 40, 10, 1, 50);
+    (void)buzzer_tone_pattern(1200, 60,  0, 1, 50);
+}
+
+// ←: 저음 단음(좌, 낮은 피치)
+void buzzer_play_input_left(void)
+{
+    (void)buzzer_tone_pattern( 900, 70, 0, 1, 45);
+}
+
+// →: 고음 단음(우, 높은 피치)
+void buzzer_play_input_right(void)
+{
+    (void)buzzer_tone_pattern(1800, 70, 0, 1, 45);
+}

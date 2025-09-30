@@ -12,6 +12,7 @@
 #include "stepper.h"
 #include "lp_stby.h"
 #include "mode_sw.h"
+#include "buzzer.h"
 
 volatile uint32_t timer6_ms;
 
@@ -39,5 +40,6 @@ void ap_tim6_callback(void)//1ms timer
 	btn_update_1ms();
 	lp_stby_on_1ms();
 	mode_sw_update_1ms();
+	buzzer_update_1ms();
 
 }

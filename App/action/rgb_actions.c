@@ -96,6 +96,7 @@ void app_rgb_actions_poll(uint8_t mod)
 		return;
 	if(card_prog_get_state() == CARD_PROG_GAP)
 		return;
+
 	// ---- ★ 카드 색상 이벤트가 있으면 우선 처리 ----
 	if (s_evt_color_pending)                               // <-- ADD
 	{

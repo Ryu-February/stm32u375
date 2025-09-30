@@ -8,6 +8,7 @@
 
 #include "lt_prog.h"
 #include "uart.h"       // 디버깅 로그 용(옵션)
+#include "buzzer.h"
 
 #ifndef LT_PROG_LOG_ENABLED
 #define LT_PROG_LOG_ENABLED   1
@@ -90,17 +91,20 @@ void lt_prog_reset(void)
 void lt_prog_on_action_execute(void)
 {
     lt_start();
+    buzzer_play_execute();
 }
 
 void lt_prog_on_action_resume(void)
 {
     lt_stop();   // 요구사항: resume이면 '멈춤' 동작
+    buzzer_play_resume();
 }
 
 void lt_prog_on_action_delete(void)
 {
     // Do nothing
     LT_LOG("delete: ignored");
+    buzzer_evt_delete();
 }
 
 /* 프로젝트 버튼 매핑(원하면 사용) */

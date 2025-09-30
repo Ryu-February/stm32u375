@@ -29,7 +29,7 @@
 #include "rgb_actions.h"
 #include "lt_prog.h"
 #include "line_tracing.h"
-
+#include "buzzer.h"
 
 #include "lp_stby.h"
 #include "stepper.h"

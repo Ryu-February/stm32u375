@@ -8,6 +8,7 @@
 #include "card_prog.h"
 #include "uart.h"
 #include "rgb_actions.h"
+#include "buzzer.h"
 
 
 // ====== 내부 타입/상태 ======
@@ -160,6 +161,7 @@ void card_prog_clear(void)
 {
     seq_clear();
     card_prog_stop();
+    buzzer_evt_delete();
     s_state = (s_mode == MODE_CARD) ? CARD_PROG_PAUSED : CARD_PROG_IDLE;
     s_last_eq_color = 0xFF;
     uart_printf("[CARD-PROG] cleared\r\n");
@@ -167,6 +169,7 @@ void card_prog_clear(void)
 
 void card_prog_stop(void)
 {
+	buzzer_play_resume();
     drive_if_changed(OP_STOP);
     step_set_hold(HOLD_BRAKE);
     if (s_state != CARD_PROG_IDLE)
@@ -180,9 +183,11 @@ void card_prog_start(void)
     {
         uart_printf("[CARD-PROG] start ignored (mode=%d, len=%u)\r\n",
                     (int)s_mode, s_len);
+        buzzer_play_no_index();
         return;
     }
 
+    buzzer_play_execute();
     s_idx   = 0;
     s_state = CARD_PROG_ARMED;
     s_t_arm = ms_now();
@@ -221,6 +226,22 @@ void card_prog_on_dual_equal(uint8_t left, uint8_t right)
 
     // ★ 여기서부터가 "새로운 동일색" 엣지
     s_last_eq_color = c;
+
+    switch (c)
+    {
+    	case COLOR_GREEN:
+    		buzzer_play_input_up();
+    		break;
+    	case COLOR_RED:
+			buzzer_play_input_down();
+			break;
+    	case COLOR_BLUE:
+			buzzer_play_input_left();
+			break;
+    	case COLOR_YELLOW:
+			buzzer_play_input_right();
+			break;
+    }
 
     color_t col = (color_t)c;
     app_rgb_actions_notify_card_color(col);   // <-- rgb 색깔 전달
@@ -314,6 +335,7 @@ void card_prog_service(void)
                     uart_printf("[CARD-PROG] done. buffer kept (len=%u)\r\n", s_len);
                     rgb_set_color(RGB_ZONE_EYES, COLOR_YELLOW);
 					rgb_set_color(RGB_ZONE_V_SHAPE, COLOR_YELLOW);
+					buzzer_play_biriririring();
                 }
                 else
                 {
@@ -325,6 +347,7 @@ void card_prog_service(void)
                     uart_printf("[CARD-PROG] gap %ums before #%u/%u\r\n",
                                 (unsigned)CARD_PROG_INTER_GAP_MS,
                                 (unsigned)(s_idx + 1), (unsigned)s_len);
+                    buzzer_play_birik();
                 }
             }
             break;

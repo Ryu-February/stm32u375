@@ -9,6 +9,7 @@
 #include "btn_prog.h"
 #include "uart.h"
 #include "rgb.h"
+#include "buzzer.h"
 
 // 단일 작성자 원칙: 이 모듈이 step_drive()를 직접 호출한다.
 // ap.c에서는 step_drive()를 다시 호출하지 말 것.
@@ -59,6 +60,7 @@ static void stop_and_pause(void)
 {
     s_state = BTN_PROG_PAUSED;   // 버퍼 보존
     drive_if_changed(OP_STOP);
+    buzzer_play_resume();
 }
 
 // ===== 공개 API =====
@@ -76,6 +78,7 @@ void btn_prog_clear(void)
     s_idx    = 0;
     s_state  = BTN_PROG_IDLE;
     drive_if_changed(OP_STOP);
+    buzzer_evt_delete();
 }
 
 void btn_prog_on_button(btn_id_t id)
@@ -85,6 +88,7 @@ void btn_prog_on_button(btn_id_t id)
         // ---- 시퀀스에 동작 추가 ----
         case BTN_FORWARD:
         {
+        	buzzer_play_input_up();
             if (enqueue(OP_FORWARD, BTN_PROG_STEPS_FORWARD))
                 uart_printf("[SEQ] +FORWARD(%lu) (len=%u)\r\n",
                             (unsigned long)BTN_PROG_STEPS_FORWARD, s_len);
@@ -94,6 +98,7 @@ void btn_prog_on_button(btn_id_t id)
         }
         case BTN_BACKWARD:
         {
+        	buzzer_play_input_down();
             if (enqueue(OP_REVERSE, BTN_PROG_STEPS_BACKWARD))
                 uart_printf("[SEQ] +BACKWARD(%lu) (len=%u)\r\n",
                             (unsigned long)BTN_PROG_STEPS_BACKWARD, s_len);
@@ -103,6 +108,7 @@ void btn_prog_on_button(btn_id_t id)
         }
         case BTN_LEFT:
         {
+        	buzzer_play_input_left();
             if (enqueue(OP_TURN_LEFT, BTN_PROG_STEPS_TURN_LEFT))
                 uart_printf("[SEQ] +LEFT(%lu) (len=%u)\r\n",
                             (unsigned long)BTN_PROG_STEPS_TURN_LEFT, s_len);
@@ -112,6 +118,7 @@ void btn_prog_on_button(btn_id_t id)
         }
         case BTN_RIGHT:
         {
+        	buzzer_play_input_right();
             if (enqueue(OP_TURN_RIGHT, BTN_PROG_STEPS_TURN_RIGHT))
                 uart_printf("[SEQ] +RIGHT(%lu) (len=%u)\r\n",
                             (unsigned long)BTN_PROG_STEPS_TURN_RIGHT, s_len);
@@ -126,6 +133,7 @@ void btn_prog_on_button(btn_id_t id)
             if (s_len == 0)
             {
                 uart_printf("[SEQ] GO ignored (empty)\r\n");
+                buzzer_play_no_index();
                 break;
             }
             s_idx   = 0;
@@ -186,7 +194,7 @@ void btn_prog_service(mode_sw_t cur_mode, bool calib_active)
                 uart_printf("[SEQ] start idx=%u/%u op=%d target=%lu\r\n",
                             s_idx + 1, s_len, (int)s_buf[s_idx].op,
                             (unsigned long)s_buf[s_idx].target_steps);
-
+                buzzer_play_execute();
                 s_state = BTN_PROG_RUNNING;
             }
             else
@@ -214,6 +222,7 @@ void btn_prog_service(mode_sw_t cur_mode, bool calib_active)
                     uart_printf("[SEQ] done. buffer kept (len=%u)\r\n", s_len);
                     rgb_set_color(RGB_ZONE_EYES, COLOR_YELLOW);
 					rgb_set_color(RGB_ZONE_V_SHAPE, COLOR_YELLOW);
+					buzzer_play_biriririring();
                 }
                 else
                 {
@@ -224,6 +233,7 @@ void btn_prog_service(mode_sw_t cur_mode, bool calib_active)
                     drive_if_changed(OP_STOP);       // ★ 간격 동안 모터 정지(HOLD는 유지)
                     uart_printf("[SEQ] gap %ums before idx=%u/%u\r\n",
                                 BTN_PROG_INTER_GAP_MS, s_idx + 1, s_len);
+                    buzzer_play_birik();
                 }
             }
             break;

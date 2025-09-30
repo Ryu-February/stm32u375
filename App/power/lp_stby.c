@@ -7,6 +7,7 @@
 
 
 #include "lp_stby.h"
+#include "buzzer.h"
 
 // ==== 하드웨어 핀 ====
 // PB1에 Delete 스위치 (프로젝트 기준)
@@ -73,7 +74,8 @@ void lp_stby_boot_gate(void)
 {
     // WKUP1이 혹시 켜져 있었다면 우선 꺼서 부팅 초기 판정에 간섭 못 하게
 	HAL_Delay(1000);//눈 속임용으로 1초 누를 때 켜지게끔 함 (야매임 ㅇㅇ)
-    ensure_wkup1_off_at_boot();
+
+	ensure_wkup1_off_at_boot();
 
     // 콜드부팅이면 바로 통과
     if (!was_from_standby())
@@ -261,10 +263,16 @@ void lp_stby_on_1ms(void)
                     s_press_ms++;
                 }
 
+                if(s_press_ms >= 300)
+                {
+                	buzzer_play_shutdown_pororororong();
+                }
+
                 if (s_press_ms >= LP_STBY_HOLD_MS)  // 1초 이상 눌림
                 {
                     s_state = HOLDING;
                 }
+
             }
             else
             {

@@ -13,6 +13,7 @@
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim4;
 extern TIM_HandleTypeDef htim6;
+extern TIM_HandleTypeDef htim16;
 
 static void apply_mode_button_mask(mode_sw_t m, bool calib_active);
 
@@ -23,6 +24,8 @@ void ap_init(void)
 {
 	i2c_init();
 	uart_init();
+
+	buzzer_init_pwm();
 
 	led_init();
 	rgb_init();
@@ -51,10 +54,13 @@ void ap_init(void)
 	HAL_TIM_Base_Start_IT(&htim2);
 	HAL_TIM_Base_Start_IT(&htim4);
 	HAL_TIM_Base_Start_IT(&htim6);
+	HAL_TIM_Base_Start_IT(&htim16);
 
 	load_color_reference_table();
 	calculate_color_brightness_offset();
 	debug_print_color_reference_table();
+
+	buzzer_play_pororororong();
 }
 
 
