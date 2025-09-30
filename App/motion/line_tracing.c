@@ -105,7 +105,7 @@ void line_tracing_update(uint32_t now_ms)
     uint32_t lb = calculate_brightness(L.red, L.green, L.blue);
     uint32_t rb = calculate_brightness(R.red, R.green, R.blue);
 
-    /*
+
     // 오프셋 보정(측정 환경 따라 한쪽만 기준치 빼기)
     if (offset_side_local == LEFT)   // LEFT 기준
     {
@@ -120,7 +120,7 @@ void line_tracing_update(uint32_t now_ms)
         {
             rb -= offset_avg_local;
         }
-    }*/
+    }
 
     // ── PID ────────────────────────────────────────────────────────────
     float error      = (float)rb - (float)lb;
@@ -136,8 +136,8 @@ void line_tracing_update(uint32_t now_ms)
     // 데드존 완화
     if (abs((int)output) < 200)
     {
-        left_ticks  = 800;
-        right_ticks = 800;
+        left_ticks  = g_cfg.base_ticks;
+        right_ticks = g_cfg.base_ticks;
     }
 
     // 한계 클램프
@@ -147,7 +147,7 @@ void line_tracing_update(uint32_t now_ms)
     if (right_ticks > g_cfg.max_ticks) right_ticks = (float)g_cfg.max_ticks;
 
     // ── 조향(느리면 제자리 턴) ────────────────────────────────────────
-    if (left_ticks < 800.0f || right_ticks < 800.0f)
+    if (left_ticks < 700.0f || right_ticks < 700.0f)
     {
         step_drive((left_ticks < right_ticks) ? OP_TURN_RIGHT : OP_TURN_LEFT);
     }
