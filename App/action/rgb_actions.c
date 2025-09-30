@@ -88,6 +88,8 @@ void app_rgb_actions_poll(uint8_t mod)
    // ----- * 카드 프로그래밍 동작 중엔 색상 입력 안 받게 처리
 	if(card_prog_get_state() == CARD_PROG_RUNNING)
 		return;
+	if(card_prog_get_state() == CARD_PROG_GAP)
+		return;
 	// ---- ★ 카드 색상 이벤트가 있으면 우선 처리 ----
 	if (s_evt_color_pending)                               // <-- ADD
 	{

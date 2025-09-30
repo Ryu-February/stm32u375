@@ -70,13 +70,19 @@ void ap_main(void)
 	{
 		// --- 모드 변경 처리 ---
         mode_sw_t m;
+        cur_mode = mode_sw_get();          // 재확인
+        if(cur_mode == MODE_CARD)
+        {
+        	card_prog_set_mode(cur_mode);
+        }
+
         if (mode_sw_changed(&m) || cur_mode == MODE_INVALID)
         {
             cur_mode = mode_sw_get();          // 재확인
             apply_mode_button_mask(cur_mode, color_calib_is_active());
             uart_printf("[MODE] %s\r\n", mode_sw_name(cur_mode));
             // ★ 여기서만 한 번
-			card_prog_set_mode(cur_mode);
+//			card_prog_set_mode(cur_mode);
         }
 
         // --- 캘리 상태 변화 처리 ---

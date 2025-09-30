@@ -292,6 +292,8 @@ void card_prog_service(void)
             else
             {
                 drive_if_changed(OP_STOP);
+                rgb_set_color(RGB_ZONE_EYES, COLOR_BLACK);
+				rgb_set_color(RGB_ZONE_V_SHAPE, COLOR_BLACK);
             }
             break;
         }
@@ -310,6 +312,8 @@ void card_prog_service(void)
                     s_state = CARD_PROG_PAUSED;
                     drive_if_changed(OP_STOP);
                     uart_printf("[CARD-PROG] done. buffer kept (len=%u)\r\n", s_len);
+                    rgb_set_color(RGB_ZONE_EYES, COLOR_YELLOW);
+					rgb_set_color(RGB_ZONE_V_SHAPE, COLOR_YELLOW);
                 }
                 else
                 {
@@ -335,6 +339,16 @@ void card_prog_service(void)
             else
             {
                 drive_if_changed(OP_STOP);
+                if((ms_now() - s_t_gap) <= 500)
+				{
+					rgb_set_color(RGB_ZONE_EYES, COLOR_WHITE);
+					rgb_set_color(RGB_ZONE_V_SHAPE, COLOR_WHITE);
+				}
+				else
+				{
+					rgb_set_color(RGB_ZONE_EYES, COLOR_BLACK);
+					rgb_set_color(RGB_ZONE_V_SHAPE, COLOR_BLACK);
+				}
             }
             break;
         }
