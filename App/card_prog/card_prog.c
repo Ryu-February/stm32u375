@@ -246,7 +246,7 @@ void card_prog_on_dual_equal(uint8_t left, uint8_t right)
     color_t col = (color_t)c;
     app_rgb_actions_notify_card_color(col);   // <-- rgb 색깔 전달
 
-    // 반복 카드: PINK(+1), PURPLE(+2), LIGHT_GREEN(+3)
+    // 반복 카드: PINK(+1), PURPLE(+2), WHITE(+3)
     uint8_t rep = 0;
     if (col == COLOR_PINK)             rep = 1;
     else if (col == COLOR_PURPLE)      rep = 2;
@@ -301,9 +301,9 @@ void card_prog_service(void)
         {
         	if ((ms_now() - s_t_arm) >= CARD_PROG_ARM_DELAY_MS)
 			{
+				start_current_item();
 				// 첫 아이템 시작: 오도메트리 리셋 후 구동
 				odometry_steps_init();                    // ★ 0으로 리셋
-				drive_if_changed(s_buf[s_idx].op);
 				uart_printf("[SEQ] start idx=%u/%u op=%d target=%lu\r\n",
 							s_idx + 1, s_len, (int)s_buf[s_idx].op,
 							(unsigned long)s_buf[s_idx].target_steps);
