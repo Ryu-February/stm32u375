@@ -241,6 +241,15 @@ void card_prog_on_dual_equal(uint8_t left, uint8_t right)
     	case COLOR_YELLOW:
 			buzzer_play_input_right();
 			break;
+    	case COLOR_PINK:
+    		buzzer_play_repeat1();
+			break;
+		case COLOR_PURPLE:
+			buzzer_play_repeat2();
+			break;
+		case COLOR_WHITE:
+			buzzer_play_repeat3();
+			break;
     }
 
     color_t col = (color_t)c;

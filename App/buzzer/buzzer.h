@@ -84,4 +84,9 @@ void buzzer_play_input_down(void);
 void buzzer_play_input_left(void);
 void buzzer_play_input_right(void);
 
+// 반복 횟수 알림 비프 (1/2/3회)
+void buzzer_play_repeat1(void);
+void buzzer_play_repeat2(void);
+void buzzer_play_repeat3(void);
+
 #endif /* BUZZER_BUZZER_H_ */

@@ -384,3 +384,23 @@ void buzzer_play_input_right(void)
 {
     (void)buzzer_tone_pattern(1800, 70, 0, 1, 45);
 }
+
+void buzzer_play_repeat1(void)
+{
+    // 1회: 약간 길고 낮은 한 방 (명확하게 한 번만)
+    (void)buzzer_tone_pattern(1000, 140, 0, 1, 50);
+}
+
+void buzzer_play_repeat2(void)
+{
+    // 2회: 동일 톤 두 번, 명확한 간격
+    // on=90ms, off=130ms × 2
+    (void)buzzer_tone_pattern(1200, 90, 130, 2, 48);
+}
+
+void buzzer_play_repeat3(void)
+{
+    // 3회: 조금 더 짧고 빠른 삼연속
+    // on=70ms, off=90ms × 3
+    (void)buzzer_tone_pattern(1400, 70, 90, 3, 45);
+}
